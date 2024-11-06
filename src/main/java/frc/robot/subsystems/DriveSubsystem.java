@@ -9,19 +9,32 @@ import edu.wpi.first.math.kinematics.MecanumDriveMotorVoltages;
 import edu.wpi.first.math.kinematics.MecanumDriveOdometry;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelSpeeds;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
 import frc.robot.Constants.DriveConstants;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
+import edu.wpi.first.wpilibj.simulation.ADXRS450_GyroSim;
+import edu.wpi.first.wpilibj.simulation.EncoderSim;
+import edu.wpi.first.wpilibj.simulation.PWMSim;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class DriveSubsystem extends SubsystemBase {
   private final PWMSparkMax m_frontLeft = new PWMSparkMax(DriveConstants.kFrontLeftMotorPort);
+  private final PWMSim m_frontLeftSim = new PWMSim(m_frontLeft);
+
   private final PWMSparkMax m_rearLeft = new PWMSparkMax(DriveConstants.kRearLeftMotorPort);
+  private final PWMSim m_rearLeftSim = new PWMSim(m_rearLeft);
+
   private final PWMSparkMax m_frontRight = new PWMSparkMax(DriveConstants.kFrontRightMotorPort);
+  private final PWMSim m_frontRightSim = new PWMSim(m_frontRight);
+
   private final PWMSparkMax m_rearRight = new PWMSparkMax(DriveConstants.kRearRightMotorPort);
+  private final PWMSim m_rearRightSim = new PWMSim(m_rearRight);
 
   private final MecanumDrive m_drive =
       new MecanumDrive(m_frontLeft::set, m_rearLeft::set, m_frontRight::set, m_rearRight::set);
@@ -32,6 +45,7 @@ public class DriveSubsystem extends SubsystemBase {
           DriveConstants.kFrontLeftEncoderPorts[0],
           DriveConstants.kFrontLeftEncoderPorts[1],
           DriveConstants.kFrontLeftEncoderReversed);
+  private final EncoderSim m_frontLeftEncoderSim = new EncoderSim(m_frontLeftEncoder);
 
   // The rear-left-side drive encoder
   private final Encoder m_rearLeftEncoder =
@@ -39,6 +53,7 @@ public class DriveSubsystem extends SubsystemBase {
           DriveConstants.kRearLeftEncoderPorts[0],
           DriveConstants.kRearLeftEncoderPorts[1],
           DriveConstants.kRearLeftEncoderReversed);
+  private final EncoderSim m_rearLeftEncoderSim = new EncoderSim(m_rearLeftEncoder);
 
   // The front-right--side drive encoder
   private final Encoder m_frontRightEncoder =
@@ -46,6 +61,7 @@ public class DriveSubsystem extends SubsystemBase {
           DriveConstants.kFrontRightEncoderPorts[0],
           DriveConstants.kFrontRightEncoderPorts[1],
           DriveConstants.kFrontRightEncoderReversed);
+  private final EncoderSim m_frontRightEncoderSim = new EncoderSim(m_frontRightEncoder);
 
   // The rear-right-side drive encoder
   private final Encoder m_rearRightEncoder =
@@ -53,9 +69,15 @@ public class DriveSubsystem extends SubsystemBase {
           DriveConstants.kRearRightEncoderPorts[0],
           DriveConstants.kRearRightEncoderPorts[1],
           DriveConstants.kRearRightEncoderReversed);
+  private final EncoderSim m_rearRightEncoderSim = new EncoderSim(m_rearRightEncoder);
 
   // The gyro sensor
   private final ADXRS450_Gyro m_gyro = new ADXRS450_Gyro();
+  private ADXRS450_GyroSim m_gyroSim = new ADXRS450_GyroSim(m_gyro);
+
+
+  // The field object for the simulator
+  private final Field2d m_field = new Field2d();
 
   // Odometry class for tracking robot pose
   MecanumDriveOdometry m_odometry =
@@ -66,6 +88,8 @@ public class DriveSubsystem extends SubsystemBase {
 
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem() {
+    SmartDashboard.putData("Field", m_field);
+
     SendableRegistry.addChild(m_drive, m_frontLeft);
     SendableRegistry.addChild(m_drive, m_rearLeft);
     SendableRegistry.addChild(m_drive, m_frontRight);
@@ -87,6 +111,41 @@ public class DriveSubsystem extends SubsystemBase {
   public void periodic() {
     // Update the odometry in the periodic block
     m_odometry.update(m_gyro.getRotation2d(), getCurrentWheelDistances());
+
+    m_field.setRobotPose(m_odometry.getPoseMeters());
+  }
+
+  @Override
+  public void simulationPeriodic() {
+
+    var before = getCurrentWheelDistances();
+
+    // Compute the distance traveled based on PWM velocity
+    // There are unit-conversions to work out here. PWM speed is -1 to 1;
+    double frontLeftVel = m_frontLeftSim.getSpeed();
+    double frontLeftPos = m_frontLeftEncoderSim.getDistance() + frontLeftVel * 0.02;
+    m_frontLeftEncoderSim.setDistance(frontLeftPos);
+
+    // The right encoder is also inverted
+    double frontRightVel = m_frontRightSim.getSpeed();
+    double frontRightPos = m_frontRightEncoderSim.getDistance() - frontRightVel * 0.02;
+    m_frontRightEncoderSim.setDistance(frontRightPos);
+
+    double rearLeftVel = m_rearLeftSim.getSpeed();
+    double rearLeftPos = m_rearLeftEncoderSim.getDistance() + rearLeftVel * 0.02;
+    m_rearLeftEncoderSim.setDistance(rearLeftPos);
+
+    // The right encoder is also inverted
+    double rearRightVel = m_rearRightSim.getSpeed();
+    double rearRightPos = m_rearRightEncoderSim.getDistance() - rearRightVel * 0.02;
+    m_rearRightEncoderSim.setDistance(rearRightPos);
+
+    var after = getCurrentWheelDistances();
+
+    var twist = DriveConstants.kDriveKinematics.toTwist2d(before, after);
+
+    var prev_angle = m_gyro.getAngle();
+    m_gyroSim.setAngle(prev_angle + Units.radiansToDegrees(twist.dtheta));
   }
 
   /**
@@ -118,9 +177,13 @@ public class DriveSubsystem extends SubsystemBase {
    */
   public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
     if (fieldRelative) {
-      m_drive.driveCartesian(xSpeed, ySpeed, rot, m_gyro.getRotation2d());
+      // jleibs: Even though ySpeed is supposed to be positive=left, the MecanumDriveKinematics
+      // implementation appears to be incorrect. Swap the command here so that the odometry
+      // ends up correct. We could maintain our own patchedc version of MecanumDriveKinematics
+      // if we wanted everything to be consistent.
+      m_drive.driveCartesian(xSpeed, -ySpeed, rot, m_gyro.getRotation2d());
     } else {
-      m_drive.driveCartesian(xSpeed, ySpeed, rot);
+      m_drive.driveCartesian(xSpeed, -ySpeed, rot);
     }
   }
 
@@ -184,8 +247,8 @@ public class DriveSubsystem extends SubsystemBase {
   public MecanumDriveWheelSpeeds getCurrentWheelSpeeds() {
     return new MecanumDriveWheelSpeeds(
         m_frontLeftEncoder.getRate(),
-        m_rearLeftEncoder.getRate(),
         m_frontRightEncoder.getRate(),
+        m_rearLeftEncoder.getRate(),
         m_rearRightEncoder.getRate());
   }
 
@@ -197,8 +260,8 @@ public class DriveSubsystem extends SubsystemBase {
   public MecanumDriveWheelPositions getCurrentWheelDistances() {
     return new MecanumDriveWheelPositions(
         m_frontLeftEncoder.getDistance(),
-        m_rearLeftEncoder.getDistance(),
         m_frontRightEncoder.getDistance(),
+        m_rearLeftEncoder.getDistance(),
         m_rearRightEncoder.getDistance());
   }
 
