@@ -26,18 +26,20 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+import com.ctre.phoenix.motorcontrol.TalonSRXSimCollection;
+
 public class DriveSubsystem extends SubsystemBase {
   private final TalonSRX m_frontLeft = new TalonSRX(DriveConstants.kFrontLeftMotorPort);
-  // private final PWMSim m_frontLeftSim = new PWMSim(m_frontLeft);
+  private final TalonSRXSimCollection m_frontLeftSim = new TalonSRXSimCollection(m_frontLeft);
 
   private final TalonSRX m_rearLeft = new TalonSRX(DriveConstants.kRearLeftMotorPort);
-  // private final PWMSim m_rearLeftSim = new PWMSim(m_rearLeft);
+  private final TalonSRXSimCollection m_rearLeftSim = new TalonSRXSimCollection(m_rearLeft);
 
   private final TalonSRX m_frontRight = new TalonSRX(DriveConstants.kFrontRightMotorPort);
-  // private final PWMSim m_frontRightSim = new PWMSim(m_frontRight);
+  private final TalonSRXSimCollection m_frontRightSim = new TalonSRXSimCollection(m_frontRight);
 
   private final TalonSRX m_rearRight = new TalonSRX(DriveConstants.kRearRightMotorPort);
-  // private final PWMSim m_rearRightSim = new PWMSim(m_rearRight);
+  private final TalonSRXSimCollection m_rearRightSim = new TalonSRXSimCollection(m_rearRight);
 
 //TalonSRX: 	set​(TalonSRXControlMode mode, double value)
 //PWM:        set​(double speed)
@@ -124,7 +126,7 @@ public class DriveSubsystem extends SubsystemBase {
 
     m_field.setRobotPose(m_odometry.getPoseMeters());
   }
-/*
+
   @Override
   public void simulationPeriodic() {
 
@@ -132,21 +134,22 @@ public class DriveSubsystem extends SubsystemBase {
 
     // Compute the distance traveled based on PWM velocity
     // There are unit-conversions to work out here. PWM speed is -1 to 1;
-    double frontLeftVel = m_frontLeftSim.getSpeed();
+    double frontLeftVel = m_frontLeftSim.getMotorOutputLeadVoltage();
+    System.out.println("frontLeftVel: " + m_frontLeftSim.getMotorOutputLeadVoltage());
     double frontLeftPos = m_frontLeftEncoderSim.getDistance() + frontLeftVel * 0.02;
     m_frontLeftEncoderSim.setDistance(frontLeftPos);
 
     // The right encoder is also inverted
-    double frontRightVel = m_frontRightSim.getSpeed();
+    double frontRightVel = m_frontRightSim.getMotorOutputLeadVoltage();
     double frontRightPos = m_frontRightEncoderSim.getDistance() - frontRightVel * 0.02;
     m_frontRightEncoderSim.setDistance(frontRightPos);
 
-    double rearLeftVel = m_rearLeftSim.getSpeed();
+    double rearLeftVel = m_rearLeftSim.getMotorOutputLeadVoltage();
     double rearLeftPos = m_rearLeftEncoderSim.getDistance() + rearLeftVel * 0.02;
     m_rearLeftEncoderSim.setDistance(rearLeftPos);
 
     // The right encoder is also inverted
-    double rearRightVel = m_rearRightSim.getSpeed();
+    double rearRightVel = m_rearRightSim.getMotorOutputLeadVoltage();
     double rearRightPos = m_rearRightEncoderSim.getDistance() - rearRightVel * 0.02;
     m_rearRightEncoderSim.setDistance(rearRightPos);
 
@@ -157,7 +160,7 @@ public class DriveSubsystem extends SubsystemBase {
     var prev_angle = m_gyro.getAngle();
     m_gyroSim.setAngle(prev_angle + Units.radiansToDegrees(twist.dtheta));
   }
-*/
+
 
 
 
