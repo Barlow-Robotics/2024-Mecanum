@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj.simulation.PWMSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.Logger;
 
 public class DriveSubsystem extends SubsystemBase {
   private final PWMSparkMax m_frontLeft = new PWMSparkMax(DriveConstants.kFrontLeftMotorPort);
@@ -111,12 +112,16 @@ public class DriveSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+    logData();
     // Update the odometry in the periodic block
     m_odometry.update(m_gyro.getRotation2d(), getCurrentWheelDistances());
 
     m_field.setRobotPose(m_odometry.getPoseMeters());
   }
 
+  public void simulationInit() {
+    // the motors don't exist yet (help Brian)
+  }
   @Override
   public void simulationPeriodic() {
 
@@ -297,5 +302,8 @@ public class DriveSubsystem extends SubsystemBase {
    */
   public double getTurnRate() {
     return -m_gyro.getRate();
+  }
+  private void logData() {
+      // Logger.recordOutput("ShooterMount/Height/Left/VoltageActual", leftElevatorMotor.getMotorVoltage().getValue());
   }
 }
