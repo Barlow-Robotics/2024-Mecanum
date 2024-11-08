@@ -1,11 +1,12 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
-package frc.robot.subsystems;
 // https://api.ctr-electronics.com/phoenix/release/java/com/ctre/phoenix/motorcontrol/can/package-summary.html
 // set​(TalonSRXControlMode mode, double value)	 To Move to robot
+
+package frc.robot.subsystems;
+
+
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.MecanumDriveMotorVoltages;
 import edu.wpi.first.math.kinematics.MecanumDriveOdometry;
@@ -26,20 +27,27 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class DriveSubsystem extends SubsystemBase {
-  private final PWMSparkMax m_frontLeft = new PWMSparkMax(DriveConstants.kFrontLeftMotorPort);
-  private final PWMSim m_frontLeftSim = new PWMSim(m_frontLeft);
+  private final TalonSRX m_frontLeft = new TalonSRX(DriveConstants.kFrontLeftMotorPort);
+  // private final PWMSim m_frontLeftSim = new PWMSim(m_frontLeft);
 
-  private final PWMSparkMax m_rearLeft = new PWMSparkMax(DriveConstants.kRearLeftMotorPort);
-  private final PWMSim m_rearLeftSim = new PWMSim(m_rearLeft);
+  private final TalonSRX m_rearLeft = new TalonSRX(DriveConstants.kRearLeftMotorPort);
+  // private final PWMSim m_rearLeftSim = new PWMSim(m_rearLeft);
 
-  private final PWMSparkMax m_frontRight = new PWMSparkMax(DriveConstants.kFrontRightMotorPort);
-  private final PWMSim m_frontRightSim = new PWMSim(m_frontRight);
+  private final TalonSRX m_frontRight = new TalonSRX(DriveConstants.kFrontRightMotorPort);
+  // private final PWMSim m_frontRightSim = new PWMSim(m_frontRight);
 
-  private final PWMSparkMax m_rearRight = new PWMSparkMax(DriveConstants.kRearRightMotorPort);
-  private final PWMSim m_rearRightSim = new PWMSim(m_rearRight);
+  private final TalonSRX m_rearRight = new TalonSRX(DriveConstants.kRearRightMotorPort);
+  // private final PWMSim m_rearRightSim = new PWMSim(m_rearRight);
 
+//TalonSRX: 	set​(TalonSRXControlMode mode, double value)
+//PWM:        set​(double speed)
   private final MecanumDrive m_drive =
-      new MecanumDrive(m_frontLeft::set, m_rearLeft::set, m_frontRight::set, m_rearRight::set);
+      new MecanumDrive(
+        (value) -> {m_frontLeft.set(TalonSRXControlMode.PercentOutput, value);},
+        (value) -> {m_rearLeft.set(TalonSRXControlMode.PercentOutput, value);},
+        (value) -> {m_frontRight.set(TalonSRXControlMode.PercentOutput, value);},
+        (value) -> {m_rearRight.set(TalonSRXControlMode.PercentOutput, value);}
+      );
 
   // The front-left-side drive encoder
   private final Encoder m_frontLeftEncoder =
@@ -116,7 +124,7 @@ public class DriveSubsystem extends SubsystemBase {
 
     m_field.setRobotPose(m_odometry.getPoseMeters());
   }
-
+/*
   @Override
   public void simulationPeriodic() {
 
@@ -149,6 +157,10 @@ public class DriveSubsystem extends SubsystemBase {
     var prev_angle = m_gyro.getAngle();
     m_gyroSim.setAngle(prev_angle + Units.radiansToDegrees(twist.dtheta));
   }
+*/
+
+
+
 
   /**
    * Returns the currently-estimated pose of the robot.
@@ -188,14 +200,14 @@ public class DriveSubsystem extends SubsystemBase {
       m_drive.driveCartesian(xSpeed, -ySpeed, rot);
     }
   }
-
+/*
   /** Sets the front left drive MotorController to a voltage. */
-  public void setDriveMotorControllersVolts(MecanumDriveMotorVoltages volts) {
-    m_frontLeft.setVoltage(volts.frontLeftVoltage);
-    m_rearLeft.setVoltage(volts.rearLeftVoltage);
-    m_frontRight.setVoltage(volts.frontRightVoltage);
-    m_rearRight.setVoltage(volts.rearRightVoltage);
-  }
+  // public void setDriveMotorControllersVolts(MecanumDriveMotorVoltages volts) {
+  //   m_frontLeft.setVoltage(volts.frontLeftVoltage);
+  //   m_rearLeft.setVoltage(volts.rearLeftVoltage);
+  //   m_frontRight.setVoltage(volts.frontRightVoltage);
+  //   m_rearRight.setVoltage(volts.rearRightVoltage);
+  // }
 
   /** Resets the drive encoders to currently read a position of 0. */
   public void resetEncoders() {
