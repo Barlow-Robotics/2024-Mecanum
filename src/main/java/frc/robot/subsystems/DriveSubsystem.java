@@ -4,11 +4,9 @@
 package frc.robot.subsystems;
 
 
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.kinematics.MecanumDriveMotorVoltages;
 import edu.wpi.first.math.kinematics.MecanumDriveOdometry;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelSpeeds;
@@ -18,38 +16,23 @@ import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
 import frc.robot.Constants.DriveConstants;
-import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
+import frc.robot.sim.PhysicsSim;
 import edu.wpi.first.wpilibj.simulation.ADXRS450_GyroSim;
 import edu.wpi.first.wpilibj.simulation.EncoderSim;
-import edu.wpi.first.wpilibj.simulation.PWMSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-import com.ctre.phoenix.motorcontrol.TalonSRXSimCollection;
-
 public class DriveSubsystem extends SubsystemBase {
-  private final TalonSRX m_frontLeft = new TalonSRX(DriveConstants.kFrontLeftMotorPort);
-  private final TalonSRXSimCollection m_frontLeftSim = new TalonSRXSimCollection(m_frontLeft);
-
-  private final TalonSRX m_rearLeft = new TalonSRX(DriveConstants.kRearLeftMotorPort);
-  private final TalonSRXSimCollection m_rearLeftSim = new TalonSRXSimCollection(m_rearLeft);
-
-  private final TalonSRX m_frontRight = new TalonSRX(DriveConstants.kFrontRightMotorPort);
-  private final TalonSRXSimCollection m_frontRightSim = new TalonSRXSimCollection(m_frontRight);
-
-  private final TalonSRX m_rearRight = new TalonSRX(DriveConstants.kRearRightMotorPort);
-  private final TalonSRXSimCollection m_rearRightSim = new TalonSRXSimCollection(m_rearRight);
+  private final WPI_TalonSRX m_frontLeft = new WPI_TalonSRX(DriveConstants.kFrontLeftMotorPort);
+  private final WPI_TalonSRX m_rearLeft = new WPI_TalonSRX(DriveConstants.kRearLeftMotorPort);
+  private final WPI_TalonSRX m_frontRight = new WPI_TalonSRX(DriveConstants.kFrontRightMotorPort);
+  private final WPI_TalonSRX m_rearRight = new WPI_TalonSRX(DriveConstants.kRearRightMotorPort);
 
 //TalonSRX: 	set​(TalonSRXControlMode mode, double value)
 //PWM:        set​(double speed)
   private final MecanumDrive m_drive =
-      new MecanumDrive(
-        (value) -> {m_frontLeft.set(TalonSRXControlMode.PercentOutput, value);},
-        (value) -> {m_rearLeft.set(TalonSRXControlMode.PercentOutput, value);},
-        (value) -> {m_frontRight.set(TalonSRXControlMode.PercentOutput, value);},
-        (value) -> {m_rearRight.set(TalonSRXControlMode.PercentOutput, value);}
-      );
+      new MecanumDrive(m_frontLeft, m_rearLeft, m_frontRight, m_rearRight);
 
   // The front-left-side drive encoder
   private final Encoder m_frontLeftEncoder =
@@ -103,8 +86,8 @@ public class DriveSubsystem extends SubsystemBase {
     SmartDashboard.putData("Field", m_field);
 
     SendableRegistry.addChild(m_drive, m_frontLeft);
-    SendableRegistry.addChild(m_drive, m_rearLeft);
     SendableRegistry.addChild(m_drive, m_frontRight);
+    SendableRegistry.addChild(m_drive, m_rearLeft);
     SendableRegistry.addChild(m_drive, m_rearRight);
 
     // Sets the distance per pulse for the encoders
@@ -112,6 +95,15 @@ public class DriveSubsystem extends SubsystemBase {
     m_rearLeftEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
     m_frontRightEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
     m_rearRightEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
+
+    m_frontLeft.configFactoryDefault();
+    m_frontRight.configFactoryDefault();
+    m_rearLeft.configFactoryDefault();
+    m_rearRight.configFactoryDefault();
+
+    m_frontLeft.setSensorPhase(true);
+    m_frontRight.setSensorPhase(true);
+
     // We need to invert one side of the drivetrain so that positive voltages
     // result in both sides moving forward. Depending on how your robot's
     // gearbox is constructed, you might have to invert the left side instead.
@@ -127,30 +119,42 @@ public class DriveSubsystem extends SubsystemBase {
     m_field.setRobotPose(m_odometry.getPoseMeters());
   }
 
+  public void simulationInit() {
+      PhysicsSim.getInstance().addTalonSRX(m_frontLeft, 0.75, 4000, true);
+      PhysicsSim.getInstance().addTalonSRX(m_frontRight, 0.75, 4000, true);
+      PhysicsSim.getInstance().addTalonSRX(m_rearLeft, 0.75, 4000);
+      PhysicsSim.getInstance().addTalonSRX(m_rearRight, 0.75, 4000);
+  }
+
   @Override
   public void simulationPeriodic() {
-
     var before = getCurrentWheelDistances();
+
+    // TODO: What is this constant
+    double motorVelToEncoderVel = .001;
 
     // Compute the distance traveled based on PWM velocity
     // There are unit-conversions to work out here. PWM speed is -1 to 1;
-    double frontLeftVel = m_frontLeftSim.getMotorOutputLeadVoltage();
-    System.out.println("frontLeftVel: " + m_frontLeftSim.getMotorOutputLeadVoltage());
-    double frontLeftPos = m_frontLeftEncoderSim.getDistance() + frontLeftVel * 0.02;
+    double frontLeftVelUnitsPer100ms = m_frontLeft.getSelectedSensorVelocity();
+    double frontLeftEncoderDelta = motorVelToEncoderVel * frontLeftVelUnitsPer100ms * .02;;
+    double frontLeftPos = m_frontLeftEncoderSim.getDistance() + frontLeftEncoderDelta;
     m_frontLeftEncoderSim.setDistance(frontLeftPos);
 
     // The right encoder is also inverted
-    double frontRightVel = m_frontRightSim.getMotorOutputLeadVoltage();
-    double frontRightPos = m_frontRightEncoderSim.getDistance() - frontRightVel * 0.02;
+    double frontRightVelUnitsPer100ms = m_frontRight.getSelectedSensorVelocity();
+    double frontRightEncoderDelta = motorVelToEncoderVel * frontRightVelUnitsPer100ms * .02;
+    double frontRightPos = m_frontRightEncoderSim.getDistance() + frontRightEncoderDelta;
     m_frontRightEncoderSim.setDistance(frontRightPos);
 
-    double rearLeftVel = m_rearLeftSim.getMotorOutputLeadVoltage();
-    double rearLeftPos = m_rearLeftEncoderSim.getDistance() + rearLeftVel * 0.02;
+    double rearLeftVelUnitsPer100ms = m_rearLeft.getSelectedSensorVelocity();
+    double rearLeftEncoderDelta = motorVelToEncoderVel * rearLeftVelUnitsPer100ms * .02;
+    double rearLeftPos = m_rearLeftEncoderSim.getDistance() + rearLeftEncoderDelta;
     m_rearLeftEncoderSim.setDistance(rearLeftPos);
 
     // The right encoder is also inverted
-    double rearRightVel = m_rearRightSim.getMotorOutputLeadVoltage();
-    double rearRightPos = m_rearRightEncoderSim.getDistance() - rearRightVel * 0.02;
+    double rearRightVVelUnitsPer100ms = m_rearRight.getSelectedSensorVelocity();
+    double rearRightEncoderDelta = motorVelToEncoderVel * rearRightVVelUnitsPer100ms * .02;
+    double rearRightPos = m_rearRightEncoderSim.getDistance() + rearRightEncoderDelta;
     m_rearRightEncoderSim.setDistance(rearRightPos);
 
     var after = getCurrentWheelDistances();
@@ -160,9 +164,6 @@ public class DriveSubsystem extends SubsystemBase {
     var prev_angle = m_gyro.getAngle();
     m_gyroSim.setAngle(prev_angle + Units.radiansToDegrees(twist.dtheta));
   }
-
-
-
 
 
   /**
