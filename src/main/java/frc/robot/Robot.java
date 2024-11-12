@@ -4,9 +4,20 @@
 
 package frc.robot;
 
+import edu.wpi.first.hal.AllianceStationID;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.Constants.ElectronicsIDs;
+
+import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 import frc.robot.sim.PhysicsSim;
 
 /**
@@ -15,7 +26,7 @@ import frc.robot.sim.PhysicsSim;
  * the package after creating this project, you must also update the build.gradle file in the
  * project.
  */
-public class Robot extends TimedRobot {
+public class Robot extends LoggedRobot {
   private Command m_autonomousCommand;
 
   private RobotContainer m_robotContainer;
@@ -29,6 +40,19 @@ public class Robot extends TimedRobot {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
+    Logger.recordMetadata("ProjectName", "2024-Mecanum"); // Set a metadata value
+    if (isReal()) {
+        Logger.addDataReceiver(new WPILOGWriter("/media/sda2/")); // Log to a USB stick
+        Logger.addDataReceiver(new NT4Publisher());
+        // Publish data to NetworkTables
+        // CHANGE - leaks below
+        new PowerDistribution(1, ModuleType.kRev); // Enables power distribution logging
+    } else {
+        Logger.addDataReceiver(new WPILOGWriter(""));
+        Logger.addDataReceiver(new NT4Publisher());
+    }
+
+    Logger.start();
   }
 
   /**
@@ -40,6 +64,11 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    String currentDriverController = DriverStation.getJoystickName(ElectronicsIDs.DriverControllerPort);
+    String currentOperatorController = DriverStation.getJoystickName(ElectronicsIDs.OperatorControllerPort);
+    Logger.recordOutput("Controllers/Driver", currentDriverController);
+    Logger.recordOutput("Controllers/Operator", currentOperatorController);
+
     // Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
     // commands, running already-scheduled commands, removing finished or interrupted commands,
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
@@ -87,16 +116,6 @@ public class Robot extends TimedRobot {
     }
   }
 
-  @Override
-  public void simulationInit() {
-    m_robotContainer.simulationInit();
-  }
-
-  @Override
-  public void simulationPeriodic() {
-    PhysicsSim.getInstance().run();
-  }
-
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {}
@@ -110,4 +129,15 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {}
+
+  public void simulationInit() {
+    m_robotContainer.simulationInit();
+    DriverStationSim.setDsAttached(true);
+    DriverStationSim.setAllianceStationId(AllianceStationID.Blue1);
+  }
+
+  @Override
+  public void simulationPeriodic() {
+    PhysicsSim.getInstance().run();
+  }
 }

@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj.simulation.EncoderSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.Logger;
 
 public class DriveSubsystem extends SubsystemBase {
   private final WPI_TalonSRX m_frontLeft = new WPI_TalonSRX(DriveConstants.kFrontLeftMotorPort);
@@ -113,6 +114,7 @@ public class DriveSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+    logData();
     // Update the odometry in the periodic block
     m_odometry.update(m_gyro.getRotation2d(), getCurrentWheelDistances());
 
@@ -150,6 +152,7 @@ public class DriveSubsystem extends SubsystemBase {
     double rearLeftEncoderDelta = motorVelToEncoderVel * rearLeftVelUnitsPer100ms * .02;
     double rearLeftPos = m_rearLeftEncoderSim.getDistance() + rearLeftEncoderDelta;
     m_rearLeftEncoderSim.setDistance(rearLeftPos);
+    
 
     // The right encoder is also inverted
     double rearRightVVelUnitsPer100ms = m_rearRight.getSelectedSensorVelocity();
@@ -313,5 +316,12 @@ public class DriveSubsystem extends SubsystemBase {
    */
   public double getTurnRate() {
     return -m_gyro.getRate();
+  }
+  private void logData() {
+      Logger.recordOutput("Motor/FrontLeftMotor", m_frontLeft.get());
+      Logger.recordOutput("Motor/FrontRightMotor", m_frontRight.get());
+      Logger.recordOutput("Motor/BackLeftMotor", m_rearLeft.get());
+      Logger.recordOutput("Motor/BackRightMotor", m_rearRight.get());
+
   }
 }
