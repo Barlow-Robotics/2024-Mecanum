@@ -1,6 +1,7 @@
 plugins {
     id "java"
     id "edu.wpi.first.GradleRIO" version "2024.3.2"
+    id 'com.diffplug.spotless' version '6.20.0'
 }
 
 java {
@@ -19,7 +20,7 @@ deploy {
             // or from command line. If not found an exception will be thrown.
             // You can use getTeamOrDefault(team) instead of getTeamNumber if you
             // want to store a team number in this file.
-            team = project.frc.getTeamNumber()
+        team = project.frc.getTeamNumber()
             debug = project.frc.getDebugOrDefault(false)
 
             artifacts {
@@ -122,3 +123,46 @@ task(checkAkitInstall, dependsOn: "classes", type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
 }
 compileJava.finalizedBy checkAkitInstall
+
+spotless {
+   java {
+      target fileTree('.') {
+            include '**/*.java'
+            exclude '**/build/**', '**/build-*/**'
+      }
+      toggleOffOn()
+      googleJavaFormat()
+      removeUnusedImports()
+      trimTrailingWhitespace()
+      endWithNewline()
+   }
+   groovyGradle {
+      target fileTree('.') {
+            include '**/*.gradle'
+            exclude '**/build/**', '**/build-*/**'
+      }
+      greclipse()
+      indentWithSpaces(4)
+      trimTrailingWhitespace()
+      endWithNewline()
+   }
+   format 'xml', {
+      target fileTree('.') {
+            include '**/*.xml'
+            exclude '**/build/**', '**/build-*/**'
+      }
+      eclipseWtp('xml')
+      trimTrailingWhitespace()
+      indentWithSpaces(2)
+      endWithNewline()
+   }
+   format 'misc', {
+      target fileTree('.') {
+            include '**/*.md', '**/.gitignore'
+            exclude '**/build/**', '**/build-*/**'
+      }
+      trimTrailingWhitespace()
+      indentWithSpaces(2)
+      endWithNewline()
+   }
+}
