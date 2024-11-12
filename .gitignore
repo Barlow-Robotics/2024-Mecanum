@@ -179,3 +179,5 @@ ctre_sim/
 
 
 *.wpilog
+simgui-ds.json
+simgui.json
