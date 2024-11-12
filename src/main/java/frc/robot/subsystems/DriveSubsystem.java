@@ -152,6 +152,7 @@ public class DriveSubsystem extends SubsystemBase {
     double rearLeftEncoderDelta = motorVelToEncoderVel * rearLeftVelUnitsPer100ms * .02;
     double rearLeftPos = m_rearLeftEncoderSim.getDistance() + rearLeftEncoderDelta;
     m_rearLeftEncoderSim.setDistance(rearLeftPos);
+    
 
     // The right encoder is also inverted
     double rearRightVVelUnitsPer100ms = m_rearRight.getSelectedSensorVelocity();
@@ -317,6 +318,10 @@ public class DriveSubsystem extends SubsystemBase {
     return -m_gyro.getRate();
   }
   private void logData() {
-      // Logger.recordOutput("ShooterMount/Height/Left/VoltageActual", leftElevatorMotor.getMotorVoltage().getValue());
+      Logger.recordOutput("Motor/FrontLeftMotor", m_frontLeft.get());
+      Logger.recordOutput("Motor/FrontRightMotor", m_frontRight.get());
+      Logger.recordOutput("Motor/BackLeftMotor", m_rearLeft.get());
+      Logger.recordOutput("Motor/BackRightMotor", m_rearRight.get());
+
   }
 }
