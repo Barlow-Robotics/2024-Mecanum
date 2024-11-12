@@ -3,9 +3,7 @@
 
 package frc.robot.subsystems;
 
-
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.MecanumDriveOdometry;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
@@ -15,13 +13,13 @@ import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
-import frc.robot.Constants.DriveConstants;
-import frc.robot.sim.PhysicsSim;
 import edu.wpi.first.wpilibj.simulation.ADXRS450_GyroSim;
 import edu.wpi.first.wpilibj.simulation.EncoderSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.DriveConstants;
+import frc.robot.sim.PhysicsSim;
 import org.littletonrobotics.junction.Logger;
 
 public class DriveSubsystem extends SubsystemBase {
@@ -30,8 +28,8 @@ public class DriveSubsystem extends SubsystemBase {
   private final WPI_TalonSRX m_frontRight = new WPI_TalonSRX(DriveConstants.kFrontRightMotorPort);
   private final WPI_TalonSRX m_rearRight = new WPI_TalonSRX(DriveConstants.kRearRightMotorPort);
 
-//TalonSRX: 	set​(TalonSRXControlMode mode, double value)
-//PWM:        set​(double speed)
+  // TalonSRX: 	set​(TalonSRXControlMode mode, double value)
+  // PWM:        set​(double speed)
   private final MecanumDrive m_drive =
       new MecanumDrive(m_frontLeft, m_rearLeft, m_frontRight, m_rearRight);
 
@@ -70,7 +68,6 @@ public class DriveSubsystem extends SubsystemBase {
   // The gyro sensor
   private final ADXRS450_Gyro m_gyro = new ADXRS450_Gyro();
   private ADXRS450_GyroSim m_gyroSim = new ADXRS450_GyroSim(m_gyro);
-
 
   // The field object for the simulator
   private final Field2d m_field = new Field2d();
@@ -122,10 +119,10 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public void simulationInit() {
-      PhysicsSim.getInstance().addTalonSRX(m_frontLeft, 0.75, 4000, true);
-      PhysicsSim.getInstance().addTalonSRX(m_frontRight, 0.75, 4000, true);
-      PhysicsSim.getInstance().addTalonSRX(m_rearLeft, 0.75, 4000);
-      PhysicsSim.getInstance().addTalonSRX(m_rearRight, 0.75, 4000);
+    PhysicsSim.getInstance().addTalonSRX(m_frontLeft, 0.75, 4000, true);
+    PhysicsSim.getInstance().addTalonSRX(m_frontRight, 0.75, 4000, true);
+    PhysicsSim.getInstance().addTalonSRX(m_rearLeft, 0.75, 4000);
+    PhysicsSim.getInstance().addTalonSRX(m_rearRight, 0.75, 4000);
   }
 
   @Override
@@ -138,7 +135,8 @@ public class DriveSubsystem extends SubsystemBase {
     // Compute the distance traveled based on PWM velocity
     // There are unit-conversions to work out here. PWM speed is -1 to 1;
     double frontLeftVelUnitsPer100ms = m_frontLeft.getSelectedSensorVelocity();
-    double frontLeftEncoderDelta = motorVelToEncoderVel * frontLeftVelUnitsPer100ms * .02;;
+    double frontLeftEncoderDelta = motorVelToEncoderVel * frontLeftVelUnitsPer100ms * .02;
+    ;
     double frontLeftPos = m_frontLeftEncoderSim.getDistance() + frontLeftEncoderDelta;
     m_frontLeftEncoderSim.setDistance(frontLeftPos);
 
@@ -152,7 +150,6 @@ public class DriveSubsystem extends SubsystemBase {
     double rearLeftEncoderDelta = motorVelToEncoderVel * rearLeftVelUnitsPer100ms * .02;
     double rearLeftPos = m_rearLeftEncoderSim.getDistance() + rearLeftEncoderDelta;
     m_rearLeftEncoderSim.setDistance(rearLeftPos);
-    
 
     // The right encoder is also inverted
     double rearRightVVelUnitsPer100ms = m_rearRight.getSelectedSensorVelocity();
@@ -167,7 +164,6 @@ public class DriveSubsystem extends SubsystemBase {
     var prev_angle = m_gyro.getAngle();
     m_gyroSim.setAngle(prev_angle + Units.radiansToDegrees(twist.dtheta));
   }
-
 
   /**
    * Returns the currently-estimated pose of the robot.
@@ -207,7 +203,8 @@ public class DriveSubsystem extends SubsystemBase {
       m_drive.driveCartesian(xSpeed, -ySpeed, rot);
     }
   }
-/*
+
+  /*
   /** Sets the front left drive MotorController to a voltage. */
   // public void setDriveMotorControllersVolts(MecanumDriveMotorVoltages volts) {
   //   m_frontLeft.setVoltage(volts.frontLeftVoltage);
@@ -317,11 +314,11 @@ public class DriveSubsystem extends SubsystemBase {
   public double getTurnRate() {
     return -m_gyro.getRate();
   }
-  private void logData() {
-      Logger.recordOutput("Motor/FrontLeftMotor", m_frontLeft.get());
-      Logger.recordOutput("Motor/FrontRightMotor", m_frontRight.get());
-      Logger.recordOutput("Motor/BackLeftMotor", m_rearLeft.get());
-      Logger.recordOutput("Motor/BackRightMotor", m_rearRight.get());
 
+  private void logData() {
+    Logger.recordOutput("Motor/FrontLeftMotor", m_frontLeft.get());
+    Logger.recordOutput("Motor/FrontRightMotor", m_frontRight.get());
+    Logger.recordOutput("Motor/BackLeftMotor", m_rearLeft.get());
+    Logger.recordOutput("Motor/BackRightMotor", m_rearRight.get());
   }
 }
