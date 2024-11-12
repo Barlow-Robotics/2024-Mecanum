@@ -116,16 +116,6 @@ public class Robot extends LoggedRobot {
     }
   }
 
-  @Override
-  public void simulationInit() {
-    m_robotContainer.simulationInit();
-  }
-
-  @Override
-  public void simulationPeriodic() {
-    PhysicsSim.getInstance().run();
-  }
-
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {}
@@ -141,13 +131,13 @@ public class Robot extends LoggedRobot {
   public void testPeriodic() {}
 
   public void simulationInit() {
-    RobotContainer.m_robotDrive.simulationInit();
+    m_robotContainer.simulationInit();
     DriverStationSim.setDsAttached(true);
     DriverStationSim.setAllianceStationId(AllianceStationID.Blue1);
   }
 
   @Override
   public void simulationPeriodic() {
-    // motors please
+    PhysicsSim.getInstance().run();
   }
 }
