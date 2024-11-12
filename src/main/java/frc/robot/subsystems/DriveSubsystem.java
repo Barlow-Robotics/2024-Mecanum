@@ -1,13 +1,12 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
-package frc.robot.subsystems;
 // https://api.ctr-electronics.com/phoenix/release/java/com/ctre/phoenix/motorcontrol/can/package-summary.html
 // set​(TalonSRXControlMode mode, double value)	 To Move to robot
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+
+package frc.robot.subsystems;
+
+
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.kinematics.MecanumDriveMotorVoltages;
 import edu.wpi.first.math.kinematics.MecanumDriveOdometry;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelSpeeds;
@@ -17,29 +16,23 @@ import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
 import frc.robot.Constants.DriveConstants;
-import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
+import frc.robot.sim.PhysicsSim;
 import edu.wpi.first.wpilibj.simulation.ADXRS450_GyroSim;
 import edu.wpi.first.wpilibj.simulation.EncoderSim;
-import edu.wpi.first.wpilibj.simulation.PWMSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class DriveSubsystem extends SubsystemBase {
-  private final PWMSparkMax m_frontLeft = new PWMSparkMax(DriveConstants.kFrontLeftMotorPort);
-  private final PWMSim m_frontLeftSim = new PWMSim(m_frontLeft);
+  private final WPI_TalonSRX m_frontLeft = new WPI_TalonSRX(DriveConstants.kFrontLeftMotorPort);
+  private final WPI_TalonSRX m_rearLeft = new WPI_TalonSRX(DriveConstants.kRearLeftMotorPort);
+  private final WPI_TalonSRX m_frontRight = new WPI_TalonSRX(DriveConstants.kFrontRightMotorPort);
+  private final WPI_TalonSRX m_rearRight = new WPI_TalonSRX(DriveConstants.kRearRightMotorPort);
 
-  private final PWMSparkMax m_rearLeft = new PWMSparkMax(DriveConstants.kRearLeftMotorPort);
-  private final PWMSim m_rearLeftSim = new PWMSim(m_rearLeft);
-
-  private final PWMSparkMax m_frontRight = new PWMSparkMax(DriveConstants.kFrontRightMotorPort);
-  private final PWMSim m_frontRightSim = new PWMSim(m_frontRight);
-
-  private final PWMSparkMax m_rearRight = new PWMSparkMax(DriveConstants.kRearRightMotorPort);
-  private final PWMSim m_rearRightSim = new PWMSim(m_rearRight);
-
+//TalonSRX: 	set​(TalonSRXControlMode mode, double value)
+//PWM:        set​(double speed)
   private final MecanumDrive m_drive =
-      new MecanumDrive(m_frontLeft::set, m_rearLeft::set, m_frontRight::set, m_rearRight::set);
+      new MecanumDrive(m_frontLeft, m_rearLeft, m_frontRight, m_rearRight);
 
   // The front-left-side drive encoder
   private final Encoder m_frontLeftEncoder =
@@ -93,8 +86,8 @@ public class DriveSubsystem extends SubsystemBase {
     SmartDashboard.putData("Field", m_field);
 
     SendableRegistry.addChild(m_drive, m_frontLeft);
-    SendableRegistry.addChild(m_drive, m_rearLeft);
     SendableRegistry.addChild(m_drive, m_frontRight);
+    SendableRegistry.addChild(m_drive, m_rearLeft);
     SendableRegistry.addChild(m_drive, m_rearRight);
 
     // Sets the distance per pulse for the encoders
@@ -102,6 +95,15 @@ public class DriveSubsystem extends SubsystemBase {
     m_rearLeftEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
     m_frontRightEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
     m_rearRightEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
+
+    m_frontLeft.configFactoryDefault();
+    m_frontRight.configFactoryDefault();
+    m_rearLeft.configFactoryDefault();
+    m_rearRight.configFactoryDefault();
+
+    m_frontLeft.setSensorPhase(true);
+    m_frontRight.setSensorPhase(true);
+
     // We need to invert one side of the drivetrain so that positive voltages
     // result in both sides moving forward. Depending on how your robot's
     // gearbox is constructed, you might have to invert the left side instead.
@@ -117,29 +119,42 @@ public class DriveSubsystem extends SubsystemBase {
     m_field.setRobotPose(m_odometry.getPoseMeters());
   }
 
+  public void simulationInit() {
+      PhysicsSim.getInstance().addTalonSRX(m_frontLeft, 0.75, 4000, true);
+      PhysicsSim.getInstance().addTalonSRX(m_frontRight, 0.75, 4000, true);
+      PhysicsSim.getInstance().addTalonSRX(m_rearLeft, 0.75, 4000);
+      PhysicsSim.getInstance().addTalonSRX(m_rearRight, 0.75, 4000);
+  }
+
   @Override
   public void simulationPeriodic() {
-
     var before = getCurrentWheelDistances();
+
+    // TODO: What is this constant
+    double motorVelToEncoderVel = .001;
 
     // Compute the distance traveled based on PWM velocity
     // There are unit-conversions to work out here. PWM speed is -1 to 1;
-    double frontLeftVel = m_frontLeftSim.getSpeed();
-    double frontLeftPos = m_frontLeftEncoderSim.getDistance() + frontLeftVel * 0.02;
+    double frontLeftVelUnitsPer100ms = m_frontLeft.getSelectedSensorVelocity();
+    double frontLeftEncoderDelta = motorVelToEncoderVel * frontLeftVelUnitsPer100ms * .02;;
+    double frontLeftPos = m_frontLeftEncoderSim.getDistance() + frontLeftEncoderDelta;
     m_frontLeftEncoderSim.setDistance(frontLeftPos);
 
     // The right encoder is also inverted
-    double frontRightVel = m_frontRightSim.getSpeed();
-    double frontRightPos = m_frontRightEncoderSim.getDistance() - frontRightVel * 0.02;
+    double frontRightVelUnitsPer100ms = m_frontRight.getSelectedSensorVelocity();
+    double frontRightEncoderDelta = motorVelToEncoderVel * frontRightVelUnitsPer100ms * .02;
+    double frontRightPos = m_frontRightEncoderSim.getDistance() + frontRightEncoderDelta;
     m_frontRightEncoderSim.setDistance(frontRightPos);
 
-    double rearLeftVel = m_rearLeftSim.getSpeed();
-    double rearLeftPos = m_rearLeftEncoderSim.getDistance() + rearLeftVel * 0.02;
+    double rearLeftVelUnitsPer100ms = m_rearLeft.getSelectedSensorVelocity();
+    double rearLeftEncoderDelta = motorVelToEncoderVel * rearLeftVelUnitsPer100ms * .02;
+    double rearLeftPos = m_rearLeftEncoderSim.getDistance() + rearLeftEncoderDelta;
     m_rearLeftEncoderSim.setDistance(rearLeftPos);
 
     // The right encoder is also inverted
-    double rearRightVel = m_rearRightSim.getSpeed();
-    double rearRightPos = m_rearRightEncoderSim.getDistance() - rearRightVel * 0.02;
+    double rearRightVVelUnitsPer100ms = m_rearRight.getSelectedSensorVelocity();
+    double rearRightEncoderDelta = motorVelToEncoderVel * rearRightVVelUnitsPer100ms * .02;
+    double rearRightPos = m_rearRightEncoderSim.getDistance() + rearRightEncoderDelta;
     m_rearRightEncoderSim.setDistance(rearRightPos);
 
     var after = getCurrentWheelDistances();
@@ -149,6 +164,7 @@ public class DriveSubsystem extends SubsystemBase {
     var prev_angle = m_gyro.getAngle();
     m_gyroSim.setAngle(prev_angle + Units.radiansToDegrees(twist.dtheta));
   }
+
 
   /**
    * Returns the currently-estimated pose of the robot.
@@ -188,14 +204,14 @@ public class DriveSubsystem extends SubsystemBase {
       m_drive.driveCartesian(xSpeed, -ySpeed, rot);
     }
   }
-
+/*
   /** Sets the front left drive MotorController to a voltage. */
-  public void setDriveMotorControllersVolts(MecanumDriveMotorVoltages volts) {
-    m_frontLeft.setVoltage(volts.frontLeftVoltage);
-    m_rearLeft.setVoltage(volts.rearLeftVoltage);
-    m_frontRight.setVoltage(volts.frontRightVoltage);
-    m_rearRight.setVoltage(volts.rearRightVoltage);
-  }
+  // public void setDriveMotorControllersVolts(MecanumDriveMotorVoltages volts) {
+  //   m_frontLeft.setVoltage(volts.frontLeftVoltage);
+  //   m_rearLeft.setVoltage(volts.rearLeftVoltage);
+  //   m_frontRight.setVoltage(volts.frontRightVoltage);
+  //   m_rearRight.setVoltage(volts.rearRightVoltage);
+  // }
 
   /** Resets the drive encoders to currently read a position of 0. */
   public void resetEncoders() {
