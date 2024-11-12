@@ -59,6 +59,10 @@ public class RobotContainer {
         .onFalse(new InstantCommand(() -> m_robotDrive.setMaxOutput(1)));
   }
 
+  public void simulationInit() {
+    m_robotDrive.simulationInit();
+  }
+
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *
