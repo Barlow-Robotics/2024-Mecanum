@@ -71,6 +71,7 @@ public final class Constants {
         new TrapezoidProfile.Constraints(
             kMaxAngularSpeedRadiansPerSecond, kMaxAngularSpeedRadiansPerSecondSquared);
   }
+
   public static final class ElectronicsIDs {
     public static final int DriverControllerPort = 0;
     public static final int OperatorControllerPort = 0;
