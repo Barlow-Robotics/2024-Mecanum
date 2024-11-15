@@ -30,6 +30,9 @@ public class DriveSubsystem extends SubsystemBase {
   private final WPI_TalonSRX m_rearLeft = new WPI_TalonSRX(DriveConstants.kRearLeftMotorPort);
   private final WPI_TalonSRX m_frontRight = new WPI_TalonSRX(DriveConstants.kFrontRightMotorPort);
   private final WPI_TalonSRX m_rearRight = new WPI_TalonSRX(DriveConstants.kRearRightMotorPort);
+  public double realX = 0;
+  public double realY = 0;
+  public double realRot = 0;
 
   // TalonSRX: 	set​(TalonSRXControlMode mode, double value)
   // PWM:        set​(double speed)
@@ -70,7 +73,7 @@ public class DriveSubsystem extends SubsystemBase {
 
   // The gyro sensor
   private final ADXRS450_Gyro m_gyro = new ADXRS450_Gyro();
-  private ADXRS450_GyroSim m_gyroSim = new ADXRS450_GyroSim(m_gyro);
+  private final ADXRS450_GyroSim m_gyroSim = new ADXRS450_GyroSim(m_gyro);
 
   // The field object for the simulator
   private final Field2d m_field = new Field2d();
@@ -84,6 +87,9 @@ public class DriveSubsystem extends SubsystemBase {
 
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem() {
+    m_gyro.reset();
+    m_gyro.calibrate();
+  
     SmartDashboard.putData("Field", m_field);
 
     SendableRegistry.addChild(m_drive, m_frontLeft);
@@ -196,6 +202,9 @@ public class DriveSubsystem extends SubsystemBase {
    * @param fieldRelative Whether the provided x and y speeds are relative to the field.
    */
   public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
+    realX = xSpeed;
+    realY = ySpeed;
+    realRot = rot;
     // xSpeed *= Constants.DriveConstants.sensitivityScale;
     // ySpeed *= Constants.DriveConstants.sensitivityScale;
     rot *= Constants.DriveConstants.sensitivityScale;
@@ -328,5 +337,9 @@ public class DriveSubsystem extends SubsystemBase {
     Logger.recordOutput("Motor/BackRightMotor", m_rearRight.get());
     Logger.recordOutput("Gyro/RotationRate", m_gyro.getRate());
     Logger.recordOutput("Gyro/RotationAngle", m_gyro.getAngle());
+    Logger.recordOutput("Controller/xSpeed", realX);
+    Logger.recordOutput("Controller/xSpeed", realY);
+    Logger.recordOutput("Controller/xSpeed", realRot);
+
   } 
 }
