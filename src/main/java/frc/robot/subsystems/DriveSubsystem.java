@@ -3,7 +3,10 @@
 
 package frc.robot.subsystems;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.MecanumDriveOdometry;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
@@ -18,9 +21,9 @@ import edu.wpi.first.wpilibj.simulation.EncoderSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.sim.PhysicsSim;
-import org.littletonrobotics.junction.Logger;
 
 public class DriveSubsystem extends SubsystemBase {
   private final WPI_TalonSRX m_frontLeft = new WPI_TalonSRX(DriveConstants.kFrontLeftMotorPort);
@@ -193,6 +196,9 @@ public class DriveSubsystem extends SubsystemBase {
    * @param fieldRelative Whether the provided x and y speeds are relative to the field.
    */
   public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
+    // xSpeed *= Constants.DriveConstants.sensitivityScale;
+    // ySpeed *= Constants.DriveConstants.sensitivityScale;
+    rot *= Constants.DriveConstants.sensitivityScale;
     if (fieldRelative) {
       // jleibs: Even though ySpeed is supposed to be positive=left, the MecanumDriveKinematics
       // implementation appears to be incorrect. Swap the command here so that the odometry
@@ -320,5 +326,7 @@ public class DriveSubsystem extends SubsystemBase {
     Logger.recordOutput("Motor/FrontRightMotor", m_frontRight.get());
     Logger.recordOutput("Motor/BackLeftMotor", m_rearLeft.get());
     Logger.recordOutput("Motor/BackRightMotor", m_rearRight.get());
-  }
+    Logger.recordOutput("Gyro/RotationRate", m_gyro.getRate());
+    Logger.recordOutput("Gyro/RotationAngle", m_gyro.getAngle());
+  } 
 }
