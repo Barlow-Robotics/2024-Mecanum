@@ -23,8 +23,9 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Robot;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.sim.PhysicsSim;
+import frc.robot.sim.PhysicsSimSRX;
 
 public class DriveSubsystem extends SubsystemBase {
   private final WPI_TalonSRX m_frontLeft = new WPI_TalonSRX(DriveConstants.kFrontLeftMotorPort);
@@ -37,7 +38,7 @@ public class DriveSubsystem extends SubsystemBase {
 
   // TalonSRX: 	set​(TalonSRXControlMode mode, double value)
   // PWM:        set​(double speed)
-  private final MecanumDrive m_drive =
+  private final MecanumDrive m_drive = 
       new MecanumDrive(m_frontLeft, m_rearLeft, m_frontRight, m_rearRight);
 
   // The front-left-side drive encoder
@@ -47,6 +48,7 @@ public class DriveSubsystem extends SubsystemBase {
           DriveConstants.kFrontLeftEncoderPorts[1],
           DriveConstants.kFrontLeftEncoderReversed);
   private final EncoderSim m_frontLeftEncoderSim = new EncoderSim(m_frontLeftEncoder);
+
 
   // The rear-left-side drive encoder
   private final Encoder m_rearLeftEncoder =
@@ -99,10 +101,11 @@ public class DriveSubsystem extends SubsystemBase {
     SendableRegistry.addChild(m_drive, m_rearRight);
 
     // Sets the distance per pulse for the encoders
-    m_frontLeftEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
-    m_rearLeftEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
-    m_frontRightEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
-    m_rearRightEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
+
+    // m_frontLeftEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
+    // m_rearLeftEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
+    // m_frontRightEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
+    // m_rearRightEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
 
     m_frontLeft.configFactoryDefault();
     m_frontRight.configFactoryDefault();
@@ -114,7 +117,7 @@ public class DriveSubsystem extends SubsystemBase {
 
     // We need to invert one side of the drivetrain so that positive voltages
     // result in both sides moving forward. Depending on how your robot's
-    // gearbox is constructed, you might have to invert the left side instead.
+    // gearbox is con`structed, you might have to invert the left side instead.
     m_frontRight.setInverted(true);
     m_rearRight.setInverted(true);
   }
@@ -122,17 +125,19 @@ public class DriveSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     logData();
-    // Update the odometry in the periodic block
-    m_odometry.update(m_gyro.getRotation2d(), getCurrentWheelDistances());
 
-    m_field.setRobotPose(m_odometry.getPoseMeters());
+    // Update the odometry in the periodic block
+    if (Robot.isSimulation()) {
+      m_odometry.update(m_gyro.getRotation2d(), getCurrentWheelDistances());
+      m_field.setRobotPose(m_odometry.getPoseMeters());
+    }
   }
 
   public void simulationInit() {
-    PhysicsSim.getInstance().addTalonSRX(m_frontLeft, 0.75, 4000, true);
-    PhysicsSim.getInstance().addTalonSRX(m_frontRight, 0.75, 4000, true);
-    PhysicsSim.getInstance().addTalonSRX(m_rearLeft, 0.75, 4000);
-    PhysicsSim.getInstance().addTalonSRX(m_rearRight, 0.75, 4000);
+    PhysicsSimSRX.getInstance().addTalonSRX(m_frontLeft, 0.75, 4000, true);
+    PhysicsSimSRX.getInstance().addTalonSRX(m_frontRight, 0.75, 4000, true);
+    PhysicsSimSRX.getInstance().addTalonSRX(m_rearLeft, 0.75, 4000);
+    PhysicsSimSRX.getInstance().addTalonSRX(m_rearRight, 0.75, 4000);
   }
 
   @Override
@@ -232,61 +237,61 @@ public class DriveSubsystem extends SubsystemBase {
   // }
 
   /** Resets the drive encoders to currently read a position of 0. */
-  public void resetEncoders() {
-    m_frontLeftEncoder.reset();
-    m_rearLeftEncoder.reset();
-    m_frontRightEncoder.reset();
-    m_rearRightEncoder.reset();
-  }
+  // public void resetEncoders() {
+  //   m_frontLeftEncoder.reset();
+  //   m_rearLeftEncoder.reset();
+  //   m_frontRightEncoder.reset();
+  //   m_rearRightEncoder.reset();
+  // }
 
   /**
    * Gets the front left drive encoder.
    *
    * @return the front left drive encoder
    */
-  public Encoder getFrontLeftEncoder() {
-    return m_frontLeftEncoder;
-  }
+  // public Encoder getFrontLeftEncoder() {
+  //   return m_frontLeftEncoder;
+  // }
 
   /**
    * Gets the rear left drive encoder.
    *
    * @return the rear left drive encoder
    */
-  public Encoder getRearLeftEncoder() {
-    return m_rearLeftEncoder;
-  }
+  // public Encoder getRearLeftEncoder() {
+  //   return m_rearLeftEncoder;
+  // }
 
   /**
    * Gets the front right drive encoder.
    *
    * @return the front right drive encoder
    */
-  public Encoder getFrontRightEncoder() {
-    return m_frontRightEncoder;
-  }
+  // public Encoder getFrontRightEncoder() {
+  //   return m_frontRightEncoder;
+  // }
 
   /**
    * Gets the rear right drive encoder.
    *
    * @return the rear right encoder
    */
-  public Encoder getRearRightEncoder() {
-    return m_rearRightEncoder;
-  }
+  // public Encoder getRearRightEncoder() {
+  //   return m_rearRightEncoder;
+  // }
 
   /**
    * Gets the current wheel speeds.
    *
    * @return the current wheel speeds in a MecanumDriveWheelSpeeds object.
    */
-  public MecanumDriveWheelSpeeds getCurrentWheelSpeeds() {
-    return new MecanumDriveWheelSpeeds(
-        m_frontLeftEncoder.getRate(),
-        m_frontRightEncoder.getRate(),
-        m_rearLeftEncoder.getRate(),
-        m_rearRightEncoder.getRate());
-  }
+  // public MecanumDriveWheelSpeeds getCurrentWheelSpeeds() {
+  //   return new MecanumDriveWheelSpeeds(
+  //       m_frontLeftEncoder.getRate(),
+  //       m_frontRightEncoder.getRate(),
+  //       m_rearLeftEncoder.getRate(),
+  //       m_rearRightEncoder.getRate());
+  // }
 
   /**
    * Gets the current wheel distance measurements.

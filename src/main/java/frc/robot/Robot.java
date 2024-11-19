@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Constants.ElectronicsIDs;
-import frc.robot.sim.PhysicsSim;
+import frc.robot.sim.PhysicsSimSRX;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
@@ -26,7 +26,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
  */
 public class Robot extends LoggedRobot {
   private Command m_autonomousCommand;
-
+  public boolean isSimulation = false;
   private RobotContainer m_robotContainer;
 
   /**
@@ -44,6 +44,7 @@ public class Robot extends LoggedRobot {
       Logger.addDataReceiver(new NT4Publisher());
       // Publish data to NetworkTables
       // CHANGE - leaks below
+    
       new PowerDistribution(1, ModuleType.kRev); // Enables power distribution logging
     } else {
       Logger.addDataReceiver(new WPILOGWriter(""));
@@ -78,7 +79,9 @@ public class Robot extends LoggedRobot {
 
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    isSimulation = false;
+  }
 
   @Override
   public void disabledPeriodic() {}
@@ -86,6 +89,7 @@ public class Robot extends LoggedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
+    isSimulation = false;
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     /*
@@ -107,6 +111,7 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void teleopInit() {
+    isSimulation = false;
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
@@ -131,6 +136,7 @@ public class Robot extends LoggedRobot {
   public void testPeriodic() {}
 
   public void simulationInit() {
+    isSimulation = true;
     m_robotContainer.simulationInit();
     DriverStationSim.setDsAttached(true);
     DriverStationSim.setAllianceStationId(AllianceStationID.Blue1);
@@ -138,6 +144,6 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void simulationPeriodic() {
-    PhysicsSim.getInstance().run();
+    PhysicsSimSRX.getInstance().run();
   }
 }

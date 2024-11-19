@@ -4,11 +4,11 @@ import com.ctre.phoenix.motorcontrol.can.*;
 import java.util.*;
 
 /** Manages physics simulation for CTRE products. */
-public class PhysicsSim {
-  private static final PhysicsSim sim = new PhysicsSim();
+public class PhysicsSimSRX {
+  private static final PhysicsSimSRX sim = new PhysicsSimSRX();
 
   /** Gets the robot simulator instance. */
-  public static PhysicsSim getInstance() {
+  public static PhysicsSimSRX getInstance() {
     return sim;
   }
 

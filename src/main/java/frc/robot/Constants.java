@@ -17,6 +17,8 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
+  public static final double jKgMetersSquared = 0.0005;
+  
   public static final class DriveConstants {
     public static final int kFrontLeftMotorPort = 0;
     public static final int kRearLeftMotorPort = 1;
@@ -53,6 +55,22 @@ public final class Constants {
         (kWheelDiameterMeters * Math.PI) / (double) kEncoderCPR;
   }
 
+  public static final class FloorIntakeConstants {
+        /* PID CONTROLLER */
+        public static final double KP = 0.2; 
+        public static final double KI = 0; 
+        public static final double KD = 0.01; 
+        public static final double IZone = 0; 
+        // public static final double FF = 1 / KrakenX60MaxRPM / 60; 
+        public static final double FF = 0.13; // KV
+
+        public static final int SupplyCurrentLimit = 20;
+		
+        // public static final double MotorRPM = 2500;
+        public static final double MotorRPM = 1750;
+        public static final double VelocityTolerance = 5;
+    }
+
   public static final class OIConstants {
     public static final int kDriverControllerPort = 0;
   }
@@ -76,5 +94,6 @@ public final class Constants {
   public static final class ElectronicsIDs {
     public static final int DriverControllerPort = 0;
     public static final int OperatorControllerPort = 0;
+    public static final int FloorMotorID = 61;
   }
 }
