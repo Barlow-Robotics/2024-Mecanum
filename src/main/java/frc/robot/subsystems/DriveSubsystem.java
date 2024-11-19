@@ -8,6 +8,7 @@ import org.littletonrobotics.junction.Logger;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.MecanumDriveOdometry;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelSpeeds;
@@ -213,7 +214,9 @@ public class DriveSubsystem extends SubsystemBase {
       // implementation appears to be incorrect. Swap the command here so that the odometry
       // ends up correct. We could maintain our own patchedc version of MecanumDriveKinematics
       // if we wanted everything to be consistent.
-      m_drive.driveCartesian(xSpeed, -ySpeed, rot, m_gyro.getRotation2d());
+      Rotation2d gyroRotation2d = m_gyro.getRotation2d();
+      Rotation2d fieldRelativeGyro = Rotation2d.fromDegrees(-gyroRotation2d.getDegrees());
+      m_drive.driveCartesian(xSpeed, -ySpeed, rot, fieldRelativeGyro);
     } else {
       m_drive.driveCartesian(xSpeed, -ySpeed, rot);
     }
@@ -321,6 +324,9 @@ public class DriveSubsystem extends SubsystemBase {
     return m_gyro.getRotation2d().getDegrees();
   }
 
+  public double getGyroHeading() {
+      return Math.IEEEremainder(m_gyro.getAngle(), 360) ;
+  }
   /**
    * Returns the turn rate of the robot.
    *
