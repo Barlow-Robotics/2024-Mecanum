@@ -95,5 +95,6 @@ public final class Constants {
     public static final int DriverControllerPort = 0;
     public static final int OperatorControllerPort = 0;
     public static final int FloorMotorID = 61;
+    public static final int AxisMotorID = 62; // placeholder
   }
 }

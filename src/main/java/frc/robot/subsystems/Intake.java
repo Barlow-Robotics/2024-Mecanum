@@ -27,9 +27,13 @@ import org.littletonrobotics.junction.Logger;
 
 public class Intake extends SubsystemBase {
 
+    TalonFX axisMotor;
     TalonFX intakeMotor;
     private final TalonFXSimState intakeMotorSim;
+    private final TalonFXSimState axisMotorSim;
     private final DCMotorSim intakeMotorModel = new DCMotorSim(edu.wpi.first.math.system.plant.DCMotor.getKrakenX60(1),
+            1, Constants.jKgMetersSquared);
+    private final DCMotorSim axisMotorModel = new DCMotorSim(edu.wpi.first.math.system.plant.DCMotor.getKrakenX60(1),
             1, Constants.jKgMetersSquared);
 
     private final VelocityVoltage voltageVelocity = new VelocityVoltage(0, 0, true, 0, 0,
@@ -42,7 +46,11 @@ public class Intake extends SubsystemBase {
         intakeMotor = new TalonFX(ElectronicsIDs.FloorMotorID);
         applyMotorConfigs(InvertedValue.Clockwise_Positive);
 
+        axisMotor = new TalonFX(ElectronicsIDs.AxisMotorID);
+        applyMotorConfigs(InvertedValue.Clockwise_Positive);
+
         intakeMotorSim = intakeMotor.getSimState();
+        axisMotorSim = axisMotor.getSimState();
     }
 
     @Override
@@ -67,6 +75,8 @@ public class Intake extends SubsystemBase {
     public boolean isIntaking() {
         return intakeMotor.getVelocity().getValue() >= (FloorIntakeConstants.MotorRPM / 60) - FloorIntakeConstants.VelocityTolerance;
     }
+
+    // add methods for axis motor
 
     /* LOGGING */
 
@@ -128,12 +138,45 @@ public class Intake extends SubsystemBase {
             System.out.println(
                     "Could not apply current limit configs to intake motor, with error code: " + status.toString());
         }
+        // Try five times to apply the Axis motor config
+        for (int i = 0; i < 5; ++i) {
+            status = axisMotor.getConfigurator().apply(motorConfigs, 0.05);
+            if (status.isOK())
+                break;
+        }
+        if (!status.isOK()) {
+            System.out.println(
+                    "Could not apply motor output configs to intake motor, with error code: " + status.toString());
+        }
+
+        // Try five times to apply the Axis motor invert config
+        for (int i = 0; i < 5; ++i) {
+            status = axisMotor.getConfigurator().apply(invertConfigs, 0.05);
+            if (status.isOK())
+                break;
+        }
+        if (!status.isOK()) {
+            System.out.println(
+                    "Could not apply invert configs to intake motor, with error code: " + status.toString());
+        }
+
+        // Try five times to apply the Axis motor current config
+        for (int i = 0; i < 5; ++i) {
+            status = axisMotor.getConfigurator().apply(currentLimitConfigs, 0.05);
+            if (status.isOK())
+                break;
+        }
+        if (!status.isOK()) {
+            System.out.println(
+                    "Could not apply current limit configs to intake motor, with error code: " + status.toString());
+        }
     }
 
     /* SIMULATION */
 
     private void simulationInit() {
         PhysicsSimFX.getInstance().addTalonFX(intakeMotor, 0.001);
+        PhysicsSimFX.getInstance().addTalonFX(axisMotor, 0.001);
     }
 
     @Override
@@ -149,6 +192,13 @@ public class Intake extends SubsystemBase {
         intakeMotorModel.update(0.02);
         intakeMotorSim.setRotorVelocity(intakeMotorModel.getAngularVelocityRPM() / 60.0);
         intakeMotorSim.setRawRotorPosition(intakeMotorModel.getAngularPositionRotations());
+
+        axisMotorSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+        double axisVoltage = axisMotorSim.getMotorVoltage();
+        axisMotorModel.setInputVoltage(axisVoltage);
+        axisMotorModel.update(0.02);
+        axisMotorSim.setRotorVelocity(intakeMotorModel.getAngularVelocityRPM() / 60.0);
+        axisMotorSim.setRawRotorPosition(intakeMotorModel.getAngularPositionRotations());
     }
 
 }
