@@ -65,7 +65,6 @@ public class DriveSubsystem extends SubsystemBase {
           DriveConstants.kFrontRightEncoderPorts[1],
           DriveConstants.kFrontRightEncoderReversed);
   private final EncoderSim m_frontRightEncoderSim = new EncoderSim(m_frontRightEncoder);
-
   // The rear-right-side drive encoder
   private final Encoder m_rearRightEncoder =
       new Encoder(
@@ -194,9 +193,10 @@ public class DriveSubsystem extends SubsystemBase {
    *
    * @param pose The pose to which to set the odometry.
    */
-  public void resetOdometry(Pose2d pose) {
-    m_odometry.resetPosition(m_gyro.getRotation2d(), getCurrentWheelDistances(), pose);
-  }
+
+  // public void resetOdometry(Pose2d pose) { // cant use
+  //   m_odometry.resetPosition(m_gyro.getRotation2d(), getCurrentWheelDistances(), pose);
+  // }
 
   /**
    * Drives the robot at given x, y and theta speeds. Speeds range from [-1, 1] and the linear
@@ -211,8 +211,6 @@ public class DriveSubsystem extends SubsystemBase {
     realX = xSpeed;
     realY = ySpeed;
     realRot = rot;
-    // xSpeed *= Constants.DriveConstants.sensitivityScale;
-    // ySpeed *= Constants.DriveConstants.sensitivityScale;
     rot *= Constants.DriveConstants.sensitivityScale;
     if (fieldRelative) {
       // jleibs: Even though ySpeed is supposed to be positive=left, the MecanumDriveKinematics
@@ -294,11 +292,12 @@ public class DriveSubsystem extends SubsystemBase {
   // }
 
   /**
+   * ONLY FOR SIMULATION 
    * Gets the current wheel distance measurements.
    *
    * @return the current wheel distance measurements in a MecanumDriveWheelPositions object.
    */
-  public MecanumDriveWheelPositions getCurrentWheelDistances() {
+  public MecanumDriveWheelPositions getCurrentWheelDistances() { // Only For Simulation Use
     return new MecanumDriveWheelPositions(
         m_frontLeftEncoder.getDistance(),
         m_frontRightEncoder.getDistance(),
@@ -340,7 +339,9 @@ public class DriveSubsystem extends SubsystemBase {
   public double getTurnRate() {
     return -m_gyro.getRate();
   }
-
+  /**
+   * Logs Data
+   */
   private void logData() {
     Logger.recordOutput("Motor/FrontLeftMotor", m_frontLeft.get());
     Logger.recordOutput("Motor/FrontRightMotor", m_frontRight.get());
