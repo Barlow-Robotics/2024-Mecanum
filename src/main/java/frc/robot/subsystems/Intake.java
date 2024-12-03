@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-//add Constants
 import frc.robot.Constants.FloorIntakeConstants;
 import frc.robot.sim.PhysicsSimFX;
 import frc.robot.Constants;
