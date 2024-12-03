@@ -100,11 +100,12 @@ public class DriveSubsystem extends SubsystemBase {
     SendableRegistry.addChild(m_drive, m_rearRight);
 
     // Sets the distance per pulse for the encoders
-
-    // m_frontLeftEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
-    // m_rearLeftEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
-    // m_frontRightEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
-    // m_rearRightEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
+    if (Robot.isSimulation()) {
+      m_frontLeftEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
+      m_rearLeftEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
+      m_frontRightEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
+      m_rearRightEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
+    }
 
     m_frontLeft.configFactoryDefault();
     m_frontRight.configFactoryDefault();
@@ -194,9 +195,9 @@ public class DriveSubsystem extends SubsystemBase {
    * @param pose The pose to which to set the odometry.
    */
 
-  // public void resetOdometry(Pose2d pose) { // cant use
-  //   m_odometry.resetPosition(m_gyro.getRotation2d(), getCurrentWheelDistances(), pose);
-  // }
+  public void resetOdometry(Pose2d pose) { // cant use
+    m_odometry.resetPosition(m_gyro.getRotation2d(), getCurrentWheelDistances(), pose);
+  }
 
   /**
    * Drives the robot at given x, y and theta speeds. Speeds range from [-1, 1] and the linear
