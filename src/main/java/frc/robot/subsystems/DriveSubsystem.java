@@ -3,15 +3,11 @@
 
 package frc.robot.subsystems;
 
-import org.littletonrobotics.junction.Logger;
-
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.MecanumDriveOdometry;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
-import edu.wpi.first.math.kinematics.MecanumDriveWheelSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
@@ -23,9 +19,10 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.Robot;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Robot;
 import frc.robot.sim.PhysicsSimSRX;
+import org.littletonrobotics.junction.Logger;
 
 public class DriveSubsystem extends SubsystemBase {
   private final WPI_TalonSRX m_frontLeft = new WPI_TalonSRX(DriveConstants.kFrontLeftMotorPort);
@@ -38,7 +35,7 @@ public class DriveSubsystem extends SubsystemBase {
 
   // TalonSRX: 	set​(TalonSRXControlMode mode, double value)
   // PWM:        set​(double speed)
-  private final MecanumDrive m_drive = 
+  private final MecanumDrive m_drive =
       new MecanumDrive(m_frontLeft, m_rearLeft, m_frontRight, m_rearRight);
 
   // The front-left-side drive encoder
@@ -48,7 +45,6 @@ public class DriveSubsystem extends SubsystemBase {
           DriveConstants.kFrontLeftEncoderPorts[1],
           DriveConstants.kFrontLeftEncoderReversed);
   private final EncoderSim m_frontLeftEncoderSim = new EncoderSim(m_frontLeftEncoder);
-
 
   // The rear-left-side drive encoder
   private final Encoder m_rearLeftEncoder =
@@ -91,7 +87,7 @@ public class DriveSubsystem extends SubsystemBase {
   public DriveSubsystem() {
     m_gyro.reset();
     m_gyro.calibrate();
-  
+
     SmartDashboard.putData("Field", m_field);
 
     SendableRegistry.addChild(m_drive, m_frontLeft);
@@ -194,7 +190,6 @@ public class DriveSubsystem extends SubsystemBase {
    *
    * @param pose The pose to which to set the odometry.
    */
-
   public void resetOdometry(Pose2d pose) { // cant use
     m_odometry.resetPosition(m_gyro.getRotation2d(), getCurrentWheelDistances(), pose);
   }
@@ -293,8 +288,7 @@ public class DriveSubsystem extends SubsystemBase {
   // }
 
   /**
-   * ONLY FOR SIMULATION 
-   * Gets the current wheel distance measurements.
+   * ONLY FOR SIMULATION Gets the current wheel distance measurements.
    *
    * @return the current wheel distance measurements in a MecanumDriveWheelPositions object.
    */
@@ -330,8 +324,9 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public double getGyroHeading() {
-      return Math.IEEEremainder(m_gyro.getAngle(), 360) ;
+    return Math.IEEEremainder(m_gyro.getAngle(), 360);
   }
+
   /**
    * Returns the turn rate of the robot.
    *
@@ -340,9 +335,8 @@ public class DriveSubsystem extends SubsystemBase {
   public double getTurnRate() {
     return -m_gyro.getRate();
   }
-  /**
-   * Logs Data
-   */
+
+  /** Logs Data */
   private void logData() {
     Logger.recordOutput("Motor/FrontLeftMotor", m_frontLeft.get());
     Logger.recordOutput("Motor/FrontRightMotor", m_frontRight.get());
@@ -353,6 +347,5 @@ public class DriveSubsystem extends SubsystemBase {
     Logger.recordOutput("Controller/xSpeed", realX);
     Logger.recordOutput("Controller/xSpeed", realY);
     Logger.recordOutput("Controller/xSpeed", realRot);
-
-  } 
+  }
 }
