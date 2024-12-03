@@ -40,9 +40,9 @@ public class RobotContainer {
             () ->
                 m_robotDrive.drive(
                     -m_driverController.getLeftY(),
-                    -m_driverController.getRightX(),
                     -m_driverController.getLeftX(),
-                    false),
+                    -m_driverController.getLeftTriggerAxis(),
+                    true),
             m_robotDrive));
   }
 
@@ -57,6 +57,9 @@ public class RobotContainer {
     new JoystickButton(m_driverController, Button.kRightBumper.value)
         .onTrue(new InstantCommand(() -> m_robotDrive.setMaxOutput(0.5)))
         .onFalse(new InstantCommand(() -> m_robotDrive.setMaxOutput(1)));
+
+    new JoystickButton(m_driverController, 9)
+        .onTrue(new InstantCommand(() -> m_robotDrive.zeroHeading()));
   }
 
   public void simulationInit() {

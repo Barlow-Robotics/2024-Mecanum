@@ -1,9 +1,9 @@
 package frc.robot.sim;
 
-import static frc.robot.sim.PhysicsSim.*; // random()
+import static frc.robot.sim.PhysicsSimSRX.*; // random()
 
 import com.ctre.phoenix.motorcontrol.can.*;
-import frc.robot.sim.PhysicsSim.*;
+import frc.robot.sim.PhysicsSimSRX.*;
 
 /** Holds information about a simulated VictorSPX. */
 class VictorSPXSimProfile extends SimProfile {

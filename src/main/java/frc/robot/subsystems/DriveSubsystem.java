@@ -5,9 +5,9 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.MecanumDriveOdometry;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
-import edu.wpi.first.math.kinematics.MecanumDriveWheelSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
@@ -18,8 +18,10 @@ import edu.wpi.first.wpilibj.simulation.EncoderSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.sim.PhysicsSim;
+import frc.robot.Robot;
+import frc.robot.sim.PhysicsSimSRX;
 import org.littletonrobotics.junction.Logger;
 
 public class DriveSubsystem extends SubsystemBase {
@@ -27,6 +29,9 @@ public class DriveSubsystem extends SubsystemBase {
   private final WPI_TalonSRX m_rearLeft = new WPI_TalonSRX(DriveConstants.kRearLeftMotorPort);
   private final WPI_TalonSRX m_frontRight = new WPI_TalonSRX(DriveConstants.kFrontRightMotorPort);
   private final WPI_TalonSRX m_rearRight = new WPI_TalonSRX(DriveConstants.kRearRightMotorPort);
+  public double realX = 0;
+  public double realY = 0;
+  public double realRot = 0;
 
   // TalonSRX: 	set​(TalonSRXControlMode mode, double value)
   // PWM:        set​(double speed)
@@ -56,7 +61,6 @@ public class DriveSubsystem extends SubsystemBase {
           DriveConstants.kFrontRightEncoderPorts[1],
           DriveConstants.kFrontRightEncoderReversed);
   private final EncoderSim m_frontRightEncoderSim = new EncoderSim(m_frontRightEncoder);
-
   // The rear-right-side drive encoder
   private final Encoder m_rearRightEncoder =
       new Encoder(
@@ -67,7 +71,7 @@ public class DriveSubsystem extends SubsystemBase {
 
   // The gyro sensor
   private final ADXRS450_Gyro m_gyro = new ADXRS450_Gyro();
-  private ADXRS450_GyroSim m_gyroSim = new ADXRS450_GyroSim(m_gyro);
+  private final ADXRS450_GyroSim m_gyroSim = new ADXRS450_GyroSim(m_gyro);
 
   // The field object for the simulator
   private final Field2d m_field = new Field2d();
@@ -81,6 +85,9 @@ public class DriveSubsystem extends SubsystemBase {
 
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem() {
+    m_gyro.reset();
+    m_gyro.calibrate();
+
     SmartDashboard.putData("Field", m_field);
 
     SendableRegistry.addChild(m_drive, m_frontLeft);
@@ -89,10 +96,12 @@ public class DriveSubsystem extends SubsystemBase {
     SendableRegistry.addChild(m_drive, m_rearRight);
 
     // Sets the distance per pulse for the encoders
-    m_frontLeftEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
-    m_rearLeftEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
-    m_frontRightEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
-    m_rearRightEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
+    if (Robot.isSimulation()) {
+      m_frontLeftEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
+      m_rearLeftEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
+      m_frontRightEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
+      m_rearRightEncoder.setDistancePerPulse(DriveConstants.kEncoderDistancePerPulse);
+    }
 
     m_frontLeft.configFactoryDefault();
     m_frontRight.configFactoryDefault();
@@ -104,7 +113,7 @@ public class DriveSubsystem extends SubsystemBase {
 
     // We need to invert one side of the drivetrain so that positive voltages
     // result in both sides moving forward. Depending on how your robot's
-    // gearbox is constructed, you might have to invert the left side instead.
+    // gearbox is con`structed, you might have to invert the left side instead.
     m_frontRight.setInverted(true);
     m_rearRight.setInverted(true);
   }
@@ -112,17 +121,19 @@ public class DriveSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     logData();
-    // Update the odometry in the periodic block
-    m_odometry.update(m_gyro.getRotation2d(), getCurrentWheelDistances());
 
-    m_field.setRobotPose(m_odometry.getPoseMeters());
+    // Update the odometry in the periodic block
+    if (Robot.isSimulation()) {
+      m_odometry.update(m_gyro.getRotation2d(), getCurrentWheelDistances());
+      m_field.setRobotPose(m_odometry.getPoseMeters());
+    }
   }
 
   public void simulationInit() {
-    PhysicsSim.getInstance().addTalonSRX(m_frontLeft, 0.75, 4000, true);
-    PhysicsSim.getInstance().addTalonSRX(m_frontRight, 0.75, 4000, true);
-    PhysicsSim.getInstance().addTalonSRX(m_rearLeft, 0.75, 4000);
-    PhysicsSim.getInstance().addTalonSRX(m_rearRight, 0.75, 4000);
+    PhysicsSimSRX.getInstance().addTalonSRX(m_frontLeft, 0.75, 4000, true);
+    PhysicsSimSRX.getInstance().addTalonSRX(m_frontRight, 0.75, 4000, true);
+    PhysicsSimSRX.getInstance().addTalonSRX(m_rearLeft, 0.75, 4000);
+    PhysicsSimSRX.getInstance().addTalonSRX(m_rearRight, 0.75, 4000);
   }
 
   @Override
@@ -179,7 +190,7 @@ public class DriveSubsystem extends SubsystemBase {
    *
    * @param pose The pose to which to set the odometry.
    */
-  public void resetOdometry(Pose2d pose) {
+  public void resetOdometry(Pose2d pose) { // cant use
     m_odometry.resetPosition(m_gyro.getRotation2d(), getCurrentWheelDistances(), pose);
   }
 
@@ -193,12 +204,18 @@ public class DriveSubsystem extends SubsystemBase {
    * @param fieldRelative Whether the provided x and y speeds are relative to the field.
    */
   public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
+    realX = xSpeed;
+    realY = ySpeed;
+    realRot = rot;
+    rot *= Constants.DriveConstants.sensitivityScale;
     if (fieldRelative) {
       // jleibs: Even though ySpeed is supposed to be positive=left, the MecanumDriveKinematics
       // implementation appears to be incorrect. Swap the command here so that the odometry
       // ends up correct. We could maintain our own patchedc version of MecanumDriveKinematics
       // if we wanted everything to be consistent.
-      m_drive.driveCartesian(xSpeed, -ySpeed, rot, m_gyro.getRotation2d());
+      Rotation2d gyroRotation2d = m_gyro.getRotation2d();
+      Rotation2d fieldRelativeGyro = Rotation2d.fromDegrees(-gyroRotation2d.getDegrees());
+      m_drive.driveCartesian(xSpeed, -ySpeed, rot, fieldRelativeGyro);
     } else {
       m_drive.driveCartesian(xSpeed, -ySpeed, rot);
     }
@@ -214,68 +231,68 @@ public class DriveSubsystem extends SubsystemBase {
   // }
 
   /** Resets the drive encoders to currently read a position of 0. */
-  public void resetEncoders() {
-    m_frontLeftEncoder.reset();
-    m_rearLeftEncoder.reset();
-    m_frontRightEncoder.reset();
-    m_rearRightEncoder.reset();
-  }
+  // public void resetEncoders() {
+  //   m_frontLeftEncoder.reset();
+  //   m_rearLeftEncoder.reset();
+  //   m_frontRightEncoder.reset();
+  //   m_rearRightEncoder.reset();
+  // }
 
   /**
    * Gets the front left drive encoder.
    *
    * @return the front left drive encoder
    */
-  public Encoder getFrontLeftEncoder() {
-    return m_frontLeftEncoder;
-  }
+  // public Encoder getFrontLeftEncoder() {
+  //   return m_frontLeftEncoder;
+  // }
 
   /**
    * Gets the rear left drive encoder.
    *
    * @return the rear left drive encoder
    */
-  public Encoder getRearLeftEncoder() {
-    return m_rearLeftEncoder;
-  }
+  // public Encoder getRearLeftEncoder() {
+  //   return m_rearLeftEncoder;
+  // }
 
   /**
    * Gets the front right drive encoder.
    *
    * @return the front right drive encoder
    */
-  public Encoder getFrontRightEncoder() {
-    return m_frontRightEncoder;
-  }
+  // public Encoder getFrontRightEncoder() {
+  //   return m_frontRightEncoder;
+  // }
 
   /**
    * Gets the rear right drive encoder.
    *
    * @return the rear right encoder
    */
-  public Encoder getRearRightEncoder() {
-    return m_rearRightEncoder;
-  }
+  // public Encoder getRearRightEncoder() {
+  //   return m_rearRightEncoder;
+  // }
 
   /**
    * Gets the current wheel speeds.
    *
    * @return the current wheel speeds in a MecanumDriveWheelSpeeds object.
    */
-  public MecanumDriveWheelSpeeds getCurrentWheelSpeeds() {
-    return new MecanumDriveWheelSpeeds(
-        m_frontLeftEncoder.getRate(),
-        m_frontRightEncoder.getRate(),
-        m_rearLeftEncoder.getRate(),
-        m_rearRightEncoder.getRate());
-  }
+  // public MecanumDriveWheelSpeeds getCurrentWheelSpeeds() {
+  //   return new MecanumDriveWheelSpeeds(
+  //       m_frontLeftEncoder.getRate(),
+  //       m_frontRightEncoder.getRate(),
+  //       m_rearLeftEncoder.getRate(),
+  //       m_rearRightEncoder.getRate());
+  // }
 
   /**
-   * Gets the current wheel distance measurements.
+   * ONLY FOR SIMULATION Gets the current wheel distance measurements.
    *
    * @return the current wheel distance measurements in a MecanumDriveWheelPositions object.
    */
-  public MecanumDriveWheelPositions getCurrentWheelDistances() {
+  public MecanumDriveWheelPositions getCurrentWheelDistances() { // Only For Simulation Use
     return new MecanumDriveWheelPositions(
         m_frontLeftEncoder.getDistance(),
         m_frontRightEncoder.getDistance(),
@@ -306,6 +323,10 @@ public class DriveSubsystem extends SubsystemBase {
     return m_gyro.getRotation2d().getDegrees();
   }
 
+  public double getGyroHeading() {
+    return Math.IEEEremainder(m_gyro.getAngle(), 360);
+  }
+
   /**
    * Returns the turn rate of the robot.
    *
@@ -315,10 +336,16 @@ public class DriveSubsystem extends SubsystemBase {
     return -m_gyro.getRate();
   }
 
+  /** Logs Data */
   private void logData() {
     Logger.recordOutput("Motor/FrontLeftMotor", m_frontLeft.get());
     Logger.recordOutput("Motor/FrontRightMotor", m_frontRight.get());
     Logger.recordOutput("Motor/BackLeftMotor", m_rearLeft.get());
     Logger.recordOutput("Motor/BackRightMotor", m_rearRight.get());
+    Logger.recordOutput("Gyro/RotationRate", m_gyro.getRate());
+    Logger.recordOutput("Gyro/RotationAngle", m_gyro.getAngle());
+    Logger.recordOutput("Controller/xSpeed", realX);
+    Logger.recordOutput("Controller/xSpeed", realY);
+    Logger.recordOutput("Controller/xSpeed", realRot);
   }
 }

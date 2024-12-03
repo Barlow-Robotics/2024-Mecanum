@@ -17,6 +17,8 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
+  public static final double jKgMetersSquared = 0.0005;
+
   public static final class DriveConstants {
     public static final int kFrontLeftMotorPort = 0;
     public static final int kRearLeftMotorPort = 1;
@@ -33,6 +35,7 @@ public final class Constants {
     public static final boolean kFrontRightEncoderReversed = false;
     public static final boolean kRearRightEncoderReversed = true;
 
+    public static final double sensitivityScale = 0.3;
     public static final double kTrackWidth = 0.5;
     // Distance between centers of right and left wheels on robot
     public static final double kWheelBase = 0.7;
@@ -50,6 +53,22 @@ public final class Constants {
     public static final double kEncoderDistancePerPulse =
         // Assumes the encoders are directly mounted on the wheel shafts
         (kWheelDiameterMeters * Math.PI) / (double) kEncoderCPR;
+  }
+
+  public static final class FloorIntakeConstants {
+    /* PID CONTROLLER */
+    public static final double KP = 0.2;
+    public static final double KI = 0;
+    public static final double KD = 0.01;
+    public static final double IZone = 0;
+    // public static final double FF = 1 / KrakenX60MaxRPM / 60;
+    public static final double FF = 0.13; // KV
+
+    public static final int SupplyCurrentLimit = 20;
+
+    // public static final double MotorRPM = 2500;
+    public static final double MotorRPM = 1750;
+    public static final double VelocityTolerance = 5;
   }
 
   public static final class OIConstants {
@@ -75,5 +94,7 @@ public final class Constants {
   public static final class ElectronicsIDs {
     public static final int DriverControllerPort = 0;
     public static final int OperatorControllerPort = 0;
+    public static final int FloorMotorID = 61;
+    public static final int AxisMotorID = 62; // placeholder
   }
 }
