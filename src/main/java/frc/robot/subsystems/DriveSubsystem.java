@@ -26,9 +26,9 @@ import org.littletonrobotics.junction.Logger;
 
 public class DriveSubsystem extends SubsystemBase {
   private final WPI_TalonSRX m_frontLeft = new WPI_TalonSRX(DriveConstants.kFrontLeftMotorPort);
-  private final WPI_TalonSRX m_rearLeft = new WPI_TalonSRX(DriveConstants.kRearLeftMotorPort);
+  private final WPI_TalonSRX m_rearLeft = new WPI_TalonSRX(DriveConstants.kBackLeftMotorPort);
   private final WPI_TalonSRX m_frontRight = new WPI_TalonSRX(DriveConstants.kFrontRightMotorPort);
-  private final WPI_TalonSRX m_rearRight = new WPI_TalonSRX(DriveConstants.kRearRightMotorPort);
+  private final WPI_TalonSRX m_rearRight = new WPI_TalonSRX(DriveConstants.kBackRightMotorPort);
   public double realX = 0;
   public double realY = 0;
   public double realRot = 0;
@@ -49,9 +49,9 @@ public class DriveSubsystem extends SubsystemBase {
   // The rear-left-side drive encoder
   private final Encoder m_rearLeftEncoder =
       new Encoder(
-          DriveConstants.kRearLeftEncoderPorts[0],
-          DriveConstants.kRearLeftEncoderPorts[1],
-          DriveConstants.kRearLeftEncoderReversed);
+          DriveConstants.kBackLeftEncoderPorts[0],
+          DriveConstants.kBackLeftEncoderPorts[1],
+          DriveConstants.kBackLeftEncoderReversed);
   private final EncoderSim m_rearLeftEncoderSim = new EncoderSim(m_rearLeftEncoder);
 
   // The front-right--side drive encoder
@@ -64,9 +64,9 @@ public class DriveSubsystem extends SubsystemBase {
   // The rear-right-side drive encoder
   private final Encoder m_rearRightEncoder =
       new Encoder(
-          DriveConstants.kRearRightEncoderPorts[0],
-          DriveConstants.kRearRightEncoderPorts[1],
-          DriveConstants.kRearRightEncoderReversed);
+          DriveConstants.kBackRightEncoderPorts[0],
+          DriveConstants.kBackRightEncoderPorts[1],
+          DriveConstants.kBackRightEncoderReversed);
   private final EncoderSim m_rearRightEncoderSim = new EncoderSim(m_rearRightEncoder);
 
   // The gyro sensor

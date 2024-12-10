@@ -17,23 +17,28 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
+  public enum IntakeState {
+    INTAKING, BASE, ISMOVING
+  }
+
   public static final double jKgMetersSquared = 0.0005;
 
   public static final class DriveConstants {
     public static final int kFrontLeftMotorPort = 0;
-    public static final int kRearLeftMotorPort = 1;
-    public static final int kFrontRightMotorPort = 2;
-    public static final int kRearRightMotorPort = 3;
+    public static final int kFrontRightMotorPort = 1;
+    public static final int kBackRightMotorPort = 2;
+    public static final int kBackLeftMotorPort = 3;
+
 
     public static final int[] kFrontLeftEncoderPorts = new int[] {0, 1};
-    public static final int[] kRearLeftEncoderPorts = new int[] {2, 3};
+    public static final int[] kBackLeftEncoderPorts = new int[] {2, 3};
     public static final int[] kFrontRightEncoderPorts = new int[] {4, 5};
-    public static final int[] kRearRightEncoderPorts = new int[] {6, 7};
+    public static final int[] kBackRightEncoderPorts = new int[] {6, 7};
 
     public static final boolean kFrontLeftEncoderReversed = false;
-    public static final boolean kRearLeftEncoderReversed = true;
+    public static final boolean kBackLeftEncoderReversed = true;
     public static final boolean kFrontRightEncoderReversed = false;
-    public static final boolean kRearRightEncoderReversed = true;
+    public static final boolean kBackRightEncoderReversed = true;
 
     public static final double sensitivityScale = 0.3;
     public static final double kTrackWidth = 0.5;
@@ -71,6 +76,25 @@ public final class Constants {
     public static final double VelocityTolerance = 5;
   }
 
+  public static final class ShoulderMountConstants {
+    // FIX CONSTANTS, COPIED FROM SHOULDERMOUNT
+    /* PID CONTROLLER */
+    public static final double KP = 0.2;
+    public static final double KI = 0;
+    public static final double KD = 0.01;
+    public static final double IZone = 0;
+    // public static final double FF = 1 / KrakenX60MaxRPM / 60;
+    public static final double FF = 0.13; // KV
+
+    public static final int SupplyCurrentLimit = 20;
+
+    // public static final double MotorRPM = 2500;
+    public static final double MotorRPM = 1750;
+    public static final double VelocityTolerance = 5;
+    public static final int baseAngle = 0;
+    public static final int intakeAngle = 69;
+  }
+
   public static final class OIConstants {
     public static final int kDriverControllerPort = 0;
   }
@@ -95,6 +119,6 @@ public final class Constants {
     public static final int DriverControllerPort = 0;
     public static final int OperatorControllerPort = 0;
     public static final int FloorMotorID = 61;
-    public static final int AxisMotorID = 62; // placeholder
+    public static final int ShoulderMotorID = 62; // placeholder
   }
 }

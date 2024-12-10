@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.proto.Controller;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -24,7 +25,7 @@ public class RobotContainer {
   public final DriveSubsystem m_robotDrive = new DriveSubsystem();
 
   // The driver's controller
-  XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
+  public XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -38,7 +39,8 @@ public class RobotContainer {
         // hand, and turning controlled by the right.
         new RunCommand(
             () ->
-                m_robotDrive.drive(
+            // if ()
+                m_robotDrive.drive( // 
                     -m_driverController.getLeftY(),
                     -m_driverController.getLeftX(),
                     -m_driverController.getLeftTriggerAxis(),
@@ -60,10 +62,23 @@ public class RobotContainer {
 
     new JoystickButton(m_driverController, 9)
         .onTrue(new InstantCommand(() -> m_robotDrive.zeroHeading()));
+
+    // if (m_driverController.getName().equals("Logitech Attack 3")) {
+    //   new JoystickButton(m_driverController, 3)
+    //       .onTrue(new InstantCommand(() -> m_robotDrive.zeroHeading()));
+    //   new JoystickButton(m_driverController, 4)
+    //       .onTrue(new InstantCommand(() -> m_robotDrive.zeroHeading()));
+    //   new JoystickButton(m_driverController, 9)
+    //       .onTrue(new InstantCommand(() -> m_robotDrive.zeroHeading()));
+    // }
   }
 
   public void simulationInit() {
     m_robotDrive.simulationInit();
+  }
+
+  public String getControllerName() {
+    return m_driverController.getName();
   }
 
   /**

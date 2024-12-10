@@ -8,6 +8,7 @@ import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -19,15 +20,16 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.ElectronicsIDs;
 import frc.robot.Constants.FloorIntakeConstants;
+import frc.robot.Constants.ShoulderMountConstants;
 import frc.robot.sim.PhysicsSimFX;
 import org.littletonrobotics.junction.Logger;
+import edu.wpi.first.math.util.Units;
 
-public class Intake extends SubsystemBase {
-// one motor turns sushi rollers
-// one motor is attached to the bottom of a forebar mechanism, torque. 
-  TalonFX intakeMotor;
-  private final TalonFXSimState intakeMotorSim;
-  private final DCMotorSim intakeMotorModel =
+public class ShoulderMount extends SubsystemBase {
+
+  TalonFX shoulderMotor;
+  private final TalonFXSimState shoulderMotorSim;
+  private final DCMotorSim shoulderMotorModel =
       new DCMotorSim(
           edu.wpi.first.math.system.plant.DCMotor.getKrakenX60(1), 1, Constants.jKgMetersSquared);
 
@@ -36,52 +38,58 @@ public class Intake extends SubsystemBase {
   private final NeutralOut brake = new NeutralOut();
 
   boolean simulationInitialized = false;
-
-  public Intake() {
-    intakeMotor = new TalonFX(ElectronicsIDs.FloorMotorID);
+      
+  public ShoulderMount() {
+    shoulderMotor = new TalonFX(ElectronicsIDs.ShoulderMotorID);
     applyMotorConfigs(InvertedValue.Clockwise_Positive);
 
-    intakeMotorSim = intakeMotor.getSimState();
+    shoulderMotorSim = shoulderMotor.getSimState();
   }
-
   @Override
   public void periodic() {
     logData();
   }
 
   public void start() {
-    Logger.recordOutput("FloorIntake/RPMDesired", FloorIntakeConstants.MotorRPM);
-    intakeMotor.setControl(voltageVelocity.withVelocity(FloorIntakeConstants.MotorRPM / 60));
+    Logger.recordOutput("ShoulderMount/RPMDesired", ShoulderMountConstants.MotorRPM);
+    // put code here
+  }
+  public void setPosition(Constants.IntakeState intakeState) {
+    if (Constants.IntakeState.BASE == intakeState && getState() == Constants.IntakeState.INTAKING) { // set  position to base
+        final MotionMagicVoltage request = new MotionMagicVoltage(Units.degreesToRotations(Constants.ShoulderMountConstants.baseAngle));
+        shoulderMotor.setControl(request);
+    }
+    else if (Constants.IntakeState.BASE == intakeState && getState() == Constants.IntakeState.INTAKING) {
+        final MotionMagicVoltage request = new MotionMagicVoltage(Units.degreesToRotations(Constants.ShoulderMountConstants.intakeAngle));
+        shoulderMotor.setControl(request);
+    }
+  }
+
+  public Constants.IntakeState getState() {
+    
   }
 
   public void reverse() {
-    Logger.recordOutput("FloorIntake/RPMDesired", -FloorIntakeConstants.MotorRPM);
-    intakeMotor.setControl(voltageVelocity.withVelocity(-FloorIntakeConstants.MotorRPM / 60));
+    Logger.recordOutput("ShoulderMount/RPMDesired", -ShoulderMountConstants.MotorRPM);
+    // put code here
   }
 
   
 
   public void stop() {
-    intakeMotor.setControl(brake);
+    shoulderMotor.setControl(brake);
   }
 
-  /* SIMULATION */
-
-    public boolean isIntaking() {
-        return intakeMotor.getVelocity().getValue() >= (FloorIntakeConstants.MotorRPM / 60) - FloorIntakeConstants.VelocityTolerance;
-    }
-
-    // add methods for axis motor
-
-    /* LOGGING */
+/* SIMULATION */
+    
+/* LOGGING */
 
     private void logData() {
-        Logger.recordOutput("FloorIntake/RPMActual", intakeMotor.getVelocity().getValue() * 60);
-        Logger.recordOutput("FloorIntake/IsIntaking", isIntaking());
-        Logger.recordOutput("FloorIntake/CurrentSupply", intakeMotor.getSupplyCurrent().getValue());
+        Logger.recordOutput("ShoulderMount/RPMActual", shoulderMotor.getVelocity().getValue() * 60);
+        Logger.recordOutput("ShoulderMount/CurrentSupply", shoulderMotor.getSupplyCurrent().getValue());
     }
 
-    /* CONFIG */
+ /* CONFIG */
 
     private void applyMotorConfigs(InvertedValue inverted) {
         // set PID Values
@@ -96,14 +104,14 @@ public class Intake extends SubsystemBase {
 
         // set current limit
         CurrentLimitsConfigs currentLimitConfigs = motorConfigs.CurrentLimits;
-        currentLimitConfigs.SupplyCurrentLimit = FloorIntakeConstants.SupplyCurrentLimit;
+        currentLimitConfigs.SupplyCurrentLimit = ShoulderMountConstants.SupplyCurrentLimit;
         currentLimitConfigs.SupplyCurrentLimitEnable = true; // Start with stator limits off
 
         StatusCode status = StatusCode.StatusCodeNotInitialized;
 
-        // Try five times to apply the Intake motor config
+        // Try five times to apply the Axis motor config
         for (int i = 0; i < 5; ++i) {
-            status = intakeMotor.getConfigurator().apply(motorConfigs, 0.05);
+            status = shoulderMotor.getConfigurator().apply(motorConfigs, 0.05);
             if (status.isOK())
                 break;
         }
@@ -112,9 +120,9 @@ public class Intake extends SubsystemBase {
                     "Could not apply motor output configs to intake motor, with error code: " + status.toString());
         }
 
-        // Try five times to apply the Intake motor invert config
+        // Try five times to apply the Axis motor invert config
         for (int i = 0; i < 5; ++i) {
-            status = intakeMotor.getConfigurator().apply(invertConfigs, 0.05);
+            status = shoulderMotor.getConfigurator().apply(invertConfigs, 0.05);
             if (status.isOK())
                 break;
         }
@@ -123,9 +131,9 @@ public class Intake extends SubsystemBase {
                     "Could not apply invert configs to intake motor, with error code: " + status.toString());
         }
 
-        // Try five times to apply the Intake motor current config
+        // Try five times to apply the Axis motor current config
         for (int i = 0; i < 5; ++i) {
-            status = intakeMotor.getConfigurator().apply(currentLimitConfigs, 0.05);
+            status = shoulderMotor.getConfigurator().apply(currentLimitConfigs, 0.05);
             if (status.isOK())
                 break;
         }
@@ -138,7 +146,7 @@ public class Intake extends SubsystemBase {
     /* SIMULATION */
 
     private void simulationInit() {
-        PhysicsSimFX.getInstance().addTalonFX(intakeMotor, 0.001);
+        PhysicsSimFX.getInstance().addTalonFX(shoulderMotor, 0.001);
     }
 
     @Override
@@ -148,12 +156,12 @@ public class Intake extends SubsystemBase {
             simulationInitialized = true;
         }
 
-        intakeMotorSim.setSupplyVoltage(RobotController.getBatteryVoltage());
-        double voltage = intakeMotorSim.getMotorVoltage();
-        intakeMotorModel.setInputVoltage(voltage);
-        intakeMotorModel.update(0.02);
-        intakeMotorSim.setRotorVelocity(intakeMotorModel.getAngularVelocityRPM() / 60.0);
-        intakeMotorSim.setRawRotorPosition(intakeMotorModel.getAngularPositionRotations());
+        shoulderMotorSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+        double axisVoltage = shoulderMotorSim.getMotorVoltage();
+        shoulderMotorModel.setInputVoltage(axisVoltage);
+        shoulderMotorModel.update(0.02);
+        shoulderMotorSim.setRotorVelocity(shoulderMotorModel.getAngularVelocityRPM() / 60.0);
+        shoulderMotorSim.setRawRotorPosition(shoulderMotorModel.getAngularPositionRotations());
     }
   
 }

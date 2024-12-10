@@ -69,7 +69,8 @@ public class Robot extends LoggedRobot {
         DriverStation.getJoystickName(ElectronicsIDs.OperatorControllerPort);
     Logger.recordOutput("Controllers/Driver", currentDriverController);
     Logger.recordOutput("Controllers/Operator", currentOperatorController);
-
+    Logger.recordOutput("Controllers/Name", m_robotContainer.getControllerName());
+    System.out.println(m_robotContainer.getControllerName());
     // Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
     // commands, running already-scheduled commands, removing finished or interrupted commands,
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
