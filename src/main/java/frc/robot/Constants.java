@@ -93,7 +93,110 @@ public final class Constants {
     public static final double VelocityTolerance = 5;
     public static final int baseAngle = 0;
     public static final int intakeAngle = 69;
+
+    /* ANGLE */
+
+    public static final double AngleKP = 30;
+    public static final double AngleKI = 0.000;
+    public static final double AngleKD = 1.5;
+    // public static final double AngleIZone = 0; // motor already does this
+    public static final double AngleFF = 0.0;
+    public static final double AngleKG = 0.29;
+
+    public static final double AngleGearRatio = 46.67; // From K's spreadsheet
+    public static final double AngleCruiseRotationsPerSec = 3; 
+    public static final double AngleAcceleration = 12;
+    public static final double AngleJerk = 40; //30; 
   }
+public static final class ShooterMountConstants {
+
+        public static final double SupplyCurrentLimit = 40;       
+       
+        /* HEIGHT / ANGLE PAIRS */
+
+        public static final double AngleTolerance = 1.5; 
+        public static final double HeightTolerance = 0.25;
+
+        public static final double MaxAngleDegrees = 55;
+        public static final double MinAngleDegrees = -61.5;
+        public static final double MaxHeightInches = 45;
+        public static final double StartingHeight = 24.75; //19.75;
+
+        public static final double SpeakerAngle = 50; 
+        public static final double SpeakerHeight = StartingHeight; 
+
+        public static final double AmpAngle = -45;
+        public static final double AmpHeight = 46.5; // 43.25; // 40;
+        
+        public static final double SourceIntakeAngle = 32; 
+        public static final double SourceIntakeHeight = 31.6; // 27;
+
+        public static final double FloorIntakeAngle = MinAngleDegrees; 
+        public static final double FloorIntakeHeight = StartingHeight; 
+
+        public static final double ClimbHeight = 47; // 44;
+        public static final double TrapAngle = -5; // CHANGE
+        public static final double TrapHeight = 46; // CHANGE
+
+        // public static final double FerryAngle = -10;
+        public static final double FerryAngle = 20;
+        public static final double FerryHeight = StartingHeight;
+
+       // public static final double AngleCANCoderMagnetOffset = 0.499755859375;
+       // public static final double AngleCANCoderMagnetOffset = 0.513611111;
+        public static final double AngleCANCoderMagnetOffset = 0.48583;
+
+
+        public static final double AngleGearRatio = 46.67; // From K's spreadsheet
+        public static final double AngleCruiseRotationsPerSec = 3; 
+        public static final double AngleAcceleration = 12;
+        public static final double AngleJerk = 40; //30; 
+
+        /* ELEVATOR */
+
+        public static final double ElevatorKP = 32;
+        public static final double ElevatorKI = 0.001;
+        public static final double ElevatorKD = 0.0;
+        // public static final double ElevatorIZone = 0.1; // motor already does this
+        public static final double ElevatorFF = 0.0;
+        public static final double ElevatorKG = 2.7;
+        public static final double ElevatorKS = 0; // use error sign instead of velocity sign? as part of initial config 
+
+
+        public static final double ClimbKP = 32;
+        public static final double ClimbKI = 0.001;
+        public static final double ClimbKD = 0.0;
+        public static final double ClimbFF = 0.0;
+        public static final double ClimbKG = 4.0;
+        public static final double ClimbKS = 0; // use error sign instead of velocity sign? as part of initial config 
+
+
+        public static final double ElevatorGearRatio = 15;
+//        public static final double ElevatorSprocketDiameter = 2.36;  // inches
+        public static final double ElevatorSprocketDiameter = 2.16;  // inches
+        public static final double ElevatorSprocketCircumference = ElevatorSprocketDiameter * Math.PI;
+        public static final double RotationsPerElevatorInch = 1 / ElevatorSprocketCircumference * ElevatorGearRatio;
+        // public static final double RotationsPerElevatorInch = 
+        // ElevatorGearRatio / Units.metersToInches(ElevatorSprocketCircumference) / 2;
+        public static final double ElevatorCruiseInchesPerSec = 10; 
+        public static final double ElevatorInchesPerSecPerSec = 10; 
+        public static final double ElevatorJerk = 800; // CHANGE - Target jerk of 1600 rps/s/s (0.1 seconds)
+    
+        // LMT added constants to enable changing shooter angle while driving to speaker
+        public static final double CameraMountHeight = 24; // inches - possibly CHANGE
+        public static final double CameraMountAngle = 3; // degrees - possibly CHANGE
+        public static final double SpeakerAprilTagHeight = 52; /*inches - possibly CHANGE - is this the bottom of the
+                                                            * AT? Might need to change to midpoint for the calc to
+                                                            * work, originally did that from bottoms of speaker and
+                                                            * AT */
+        // public static final double MidSpeakerHeight = 80.4; // inches to middle of speaker hole - possibly CHANGE
+        // public static final double MidSpeakerHeight = 88; // bottom of speaker opening is at 78", so aim above it.
+        public static final double MidSpeakerHeight = 112; // bottom of speaker opening is at 78", so aim above it.
+        //  public static final double MidSpeakerHeight = 105; // bottom of speaker opening is at 78", so aim above it.
+        public static final double ElevatorHeightUnextended = 26; // inches - possibly CHANGE - height of elevator at rest
+        
+        public static final int MissedSpeakerTargetFrameTolerance = 13;  // rougly .25 seconds
+    }
 
   public static final class OIConstants {
     public static final int kDriverControllerPort = 0;
