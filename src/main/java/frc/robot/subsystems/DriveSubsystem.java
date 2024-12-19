@@ -212,12 +212,12 @@ public class DriveSubsystem extends SubsystemBase {
       // jleibs: Even though ySpeed is supposed to be positive=left, the MecanumDriveKinematics
       // implementation appears to be incorrect. Swap the command here so that the odometry
       // ends up correct. We could maintain our own patchedc version of MecanumDriveKinematics
-      // if we wanted everything to be consistent.
+      // if we wanted everything to be consistent.z
       Rotation2d gyroRotation2d = m_gyro.getRotation2d();
       Rotation2d fieldRelativeGyro = Rotation2d.fromDegrees(-gyroRotation2d.getDegrees());
-      m_drive.driveCartesian(xSpeed, -ySpeed, rot, fieldRelativeGyro);
+      m_drive.driveCartesian(ySpeed, xSpeed, rot, fieldRelativeGyro);
     } else {
-      m_drive.driveCartesian(xSpeed, -ySpeed, rot);
+      m_drive.driveCartesian(ySpeed, xSpeed, rot);
     }
   }
 
