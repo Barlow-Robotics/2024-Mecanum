@@ -33,8 +33,8 @@ public class DriveSubsystem extends SubsystemBase {
   public double realY = 0;
   public double realRot = 0;
 
-  // TalonSRX: 	set​(TalonSRXControlMode mode, double value)
-  // PWM:        set​(double speed)
+  // TalonSRX: set​(TalonSRXControlMode mode, double value)
+  // PWM: set​(double speed)
   private final MecanumDrive m_drive =
       new MecanumDrive(m_frontLeft, m_rearLeft, m_frontRight, m_rearRight);
 
@@ -108,12 +108,13 @@ public class DriveSubsystem extends SubsystemBase {
     m_rearLeft.configFactoryDefault();
     m_rearRight.configFactoryDefault();
 
-    m_frontLeft.setSensorPhase(true);
-    m_frontRight.setSensorPhase(true);
+    // m_frontLeft.setSensorPhase(true);
+    // m_frontRight.setSensorPhase(true);
 
     // We need to invert one side of the drivetrain so that positive voltages
     // result in both sides moving forward. Depending on how your robot's
     // gearbox is con`structed, you might have to invert the left side instead.
+
     m_frontRight.setInverted(true);
     m_rearRight.setInverted(true);
   }
@@ -209,33 +210,37 @@ public class DriveSubsystem extends SubsystemBase {
     realRot = rot;
     rot *= Constants.DriveConstants.sensitivityScale;
     if (fieldRelative) {
-      // jleibs: Even though ySpeed is supposed to be positive=left, the MecanumDriveKinematics
-      // implementation appears to be incorrect. Swap the command here so that the odometry
-      // ends up correct. We could maintain our own patchedc version of MecanumDriveKinematics
+      // jleibs: Even though ySpeed is supposed to be positive=left, the
+      // MecanumDriveKinematics
+      // implementation appears to be incorrect. Swap the command here so that the
+      // odometry
+      // ends up correct. We could maintain our own patchedc version of
+      // MecanumDriveKinematics
       // if we wanted everything to be consistent.
       Rotation2d gyroRotation2d = m_gyro.getRotation2d();
       Rotation2d fieldRelativeGyro = Rotation2d.fromDegrees(-gyroRotation2d.getDegrees());
-      m_drive.driveCartesian(xSpeed, -ySpeed, rot, fieldRelativeGyro);
+      m_drive.driveCartesian(xSpeed, ySpeed, rot, fieldRelativeGyro);
     } else {
-      m_drive.driveCartesian(xSpeed, -ySpeed, rot);
+      m_drive.driveCartesian(xSpeed, ySpeed, rot);
     }
   }
 
   /*
-  /** Sets the front left drive MotorController to a voltage. */
+   * /** Sets the front left drive MotorController to a voltage.
+   */
   // public void setDriveMotorControllersVolts(MecanumDriveMotorVoltages volts) {
-  //   m_frontLeft.setVoltage(volts.frontLeftVoltage);
-  //   m_rearLeft.setVoltage(volts.rearLeftVoltage);
-  //   m_frontRight.setVoltage(volts.frontRightVoltage);
-  //   m_rearRight.setVoltage(volts.rearRightVoltage);
+  // m_frontLeft.setVoltage(volts.frontLeftVoltage);
+  // m_rearLeft.setVoltage(volts.rearLeftVoltage);
+  // m_frontRight.setVoltage(volts.frontRightVoltage);
+  // m_rearRight.setVoltage(volts.rearRightVoltage);
   // }
 
   /** Resets the drive encoders to currently read a position of 0. */
   // public void resetEncoders() {
-  //   m_frontLeftEncoder.reset();
-  //   m_rearLeftEncoder.reset();
-  //   m_frontRightEncoder.reset();
-  //   m_rearRightEncoder.reset();
+  // m_frontLeftEncoder.reset();
+  // m_rearLeftEncoder.reset();
+  // m_frontRightEncoder.reset();
+  // m_rearRightEncoder.reset();
   // }
 
   /**
@@ -244,7 +249,7 @@ public class DriveSubsystem extends SubsystemBase {
    * @return the front left drive encoder
    */
   // public Encoder getFrontLeftEncoder() {
-  //   return m_frontLeftEncoder;
+  // return m_frontLeftEncoder;
   // }
 
   /**
@@ -253,7 +258,7 @@ public class DriveSubsystem extends SubsystemBase {
    * @return the rear left drive encoder
    */
   // public Encoder getRearLeftEncoder() {
-  //   return m_rearLeftEncoder;
+  // return m_rearLeftEncoder;
   // }
 
   /**
@@ -262,7 +267,7 @@ public class DriveSubsystem extends SubsystemBase {
    * @return the front right drive encoder
    */
   // public Encoder getFrontRightEncoder() {
-  //   return m_frontRightEncoder;
+  // return m_frontRightEncoder;
   // }
 
   /**
@@ -271,7 +276,7 @@ public class DriveSubsystem extends SubsystemBase {
    * @return the rear right encoder
    */
   // public Encoder getRearRightEncoder() {
-  //   return m_rearRightEncoder;
+  // return m_rearRightEncoder;
   // }
 
   /**
@@ -280,11 +285,11 @@ public class DriveSubsystem extends SubsystemBase {
    * @return the current wheel speeds in a MecanumDriveWheelSpeeds object.
    */
   // public MecanumDriveWheelSpeeds getCurrentWheelSpeeds() {
-  //   return new MecanumDriveWheelSpeeds(
-  //       m_frontLeftEncoder.getRate(),
-  //       m_frontRightEncoder.getRate(),
-  //       m_rearLeftEncoder.getRate(),
-  //       m_rearRightEncoder.getRate());
+  // return new MecanumDriveWheelSpeeds(
+  // m_frontLeftEncoder.getRate(),
+  // m_frontRightEncoder.getRate(),
+  // m_rearLeftEncoder.getRate(),
+  // m_rearRightEncoder.getRate());
   // }
 
   /**
