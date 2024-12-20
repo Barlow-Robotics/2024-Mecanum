@@ -108,8 +108,8 @@ public class DriveSubsystem extends SubsystemBase {
     m_rearLeft.configFactoryDefault();
     m_rearRight.configFactoryDefault();
 
-    m_frontLeft.setSensorPhase(true);
-    m_frontRight.setSensorPhase(true);
+    // m_frontLeft.setSensorPhase(true);
+    // m_frontRight.setSensorPhase(true);
 
     // We need to invert one side of the drivetrain so that positive voltages
     // result in both sides moving forward. Depending on how your robot's
@@ -117,8 +117,8 @@ public class DriveSubsystem extends SubsystemBase {
     // m_frontLeft.setInverted(true);
 
     // m_rearLeft.setInverted(true);
-    // m_frontRight.setInverted(true);
-    // m_rearRight.setInverted(true);
+    m_frontRight.setInverted(true);
+    m_rearRight.setInverted(true);
     // m_frontLeft.setInverted(true);
 
 

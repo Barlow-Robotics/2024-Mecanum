@@ -40,8 +40,8 @@ public class RobotContainer {
             () ->
                 m_robotDrive.drive(
                     -m_driverController.getLeftY(),
-                    -m_driverController.getLeftX(),
-                    -m_driverController.getLeftTriggerAxis(),
+                    m_driverController.getLeftX(),
+                    m_driverController.getLeftTriggerAxis(),
                     false),
             m_robotDrive));
   }
